@@ -1,0 +1,2382 @@
+/* ============================================================================
+   BLADE RUNNER — a theme for Obsidian
+   ----------------------------------------------------------------------------
+   Design brief
+     "High tech, low life." The city is dark, stratified and loud with signage;
+     the screen you work at is the one warm, legible thing in it. So the neon
+     lives in the CHROME — tabs, rails, markers, alerts, status readouts — and
+     the PAGE stays habitable. Prose is never set in a saturated colour, never
+     glows, and never sits on pure black: halation around bright type on a true
+     black ground is what makes most neon themes unreadable after ten minutes.
+
+   Rules this theme follows
+     1. No #000 ground, no #fff type. Blue-black ground, soft blue-white text.
+     2. Saturated colour is structural, not decorative: it marks state, level
+        and kind. If a colour appears, it means something.
+     3. Glow is a highlight, not a texture. Headings, active UI and focus only.
+     4. The writing surface is the brightest plane in the window. The city is
+        the darker frame around it.
+     5. Every effect has an off switch (Style Settings) and respects
+        prefers-reduced-motion / prefers-reduced-transparency.
+
+   Structure
+     00  Style Settings schema
+     01  Palette — dark ("Night City")
+     02  Palette — light ("Day Shift")
+     03  Foundations: type, rhythm, radii, bevels, glow
+     04  Window chrome: titlebar, ribbon, status bar, dividers, scrollbars
+     05  Sidebars, file explorer, outline, search
+     06  Tabs and view headers
+     07  Editor: headings, prose, lists, quotes, links, tags
+     08  Callouts
+     09  Code, syntax, tables
+     10  Properties and metadata
+     11  Controls: buttons, inputs, toggles, sliders, checkboxes
+     12  Overlays: modals, menus, prompts, tooltips, suggestions
+     13  Plugin surfaces: graph, canvas, bases, calendar
+     14  Effects layer: scanlines, grain, bloom
+     15  Utility cssclasses
+     16  Accessibility and motion fallbacks
+   ========================================================================= */
+
+
+/* ============================================================================
+   00  STYLE SETTINGS
+   ========================================================================= */
+
+/* @settings
+
+name: Blade Runner
+id: blade-runner
+settings:
+    -
+        id: br-signal
+        title: Signal
+        description: High tech, low life. Start here — the accent that carries links, focus and active state.
+        type: heading
+        level: 1
+        collapsed: false
+    -
+        id: br-accent-preset
+        title: Primary signal
+        description: Drives links, focus rings, active tabs and the caret.
+        type: class-select
+        allowEmpty: false
+        default: br-signal-cyan
+        options:
+            -
+                label: Cyan — argon
+                value: br-signal-cyan
+            -
+                label: Magenta — sign
+                value: br-signal-magenta
+            -
+                label: Acid — phosphor
+                value: br-signal-acid
+            -
+                label: Amber — sodium
+                value: br-signal-amber
+            -
+                label: Violet — holo
+                value: br-signal-violet
+    -
+        id: br-secondary-preset
+        title: Secondary signal
+        description: Headings, selection, hover and the second colour in every pairing.
+        type: class-select
+        allowEmpty: false
+        default: br-second-magenta
+        options:
+            -
+                label: Magenta — sign
+                value: br-second-magenta
+            -
+                label: Cyan — argon
+                value: br-second-cyan
+            -
+                label: Amber — sodium
+                value: br-second-amber
+            -
+                label: Acid — phosphor
+                value: br-second-acid
+            -
+                label: Violet — holo
+                value: br-second-violet
+    -
+        id: br-glow-strength
+        title: Bloom
+        description: How far neon bleeds into the dark. 0 turns every glow off.
+        type: variable-number-slider
+        default: 42
+        min: 0
+        max: 100
+        step: 2
+    -
+        id: br-typography
+        title: Typography
+        description: The reading face, the signage face and the measure.
+        type: heading
+        level: 1
+        collapsed: true
+    -
+        id: br-body-font
+        title: Reading face
+        description: The face long prose is set in.
+        type: class-select
+        allowEmpty: false
+        default: br-text-quattro
+        options:
+            -
+                label: iA Writer Quattro — duospace, built for writing
+                value: br-text-quattro
+            -
+                label: Geist — technical grotesque
+                value: br-text-geist
+            -
+                label: Literata — serif, long-form
+                value: br-text-literata
+            -
+                label: System default
+                value: br-text-system
+    -
+        id: br-heading-font
+        title: Signage face
+        description: Headings and inline titles.
+        type: class-select
+        allowEmpty: false
+        default: br-head-azeret
+        options:
+            -
+                label: Azeret Mono — square, technical
+                value: br-head-azeret
+            -
+                label: Geist — grotesque
+                value: br-head-geist
+            -
+                label: Space Mono — retro-futurist
+                value: br-head-space
+            -
+                label: Match the reading face
+                value: br-head-match
+    -
+        id: br-line-height
+        title: Line height
+        type: variable-number-slider
+        default: 1.65
+        min: 1.2
+        max: 2.2
+        step: 0.05
+    -
+        id: br-line-width
+        title: Line width
+        description: Width of the readable line length in the editor.
+        type: variable-number
+        default: 740
+        min: 500
+        max: 1400
+        step: 20
+        format: px
+    -
+        id: br-hud-sentence-case
+        title: Sentence-case HUD labels
+        description: Off by default the status bar, table headers, callout titles and property keys are set in letterspaced caps. Turn this on for ordinary capitalisation.
+        type: class-toggle
+        default: false
+    -
+        id: br-structure
+        title: Structure
+        description: Bevels and heading furniture.
+        type: heading
+        level: 1
+        collapsed: true
+    -
+        id: br-cut
+        title: Corner cut
+        description: The bevel on panels, callouts, code and menus.
+        type: variable-number
+        default: 10
+        min: 0
+        max: 22
+        step: 1
+        format: px
+    -
+        id: br-heading-rules-off
+        title: Plain headings
+        description: Removes the fading hairline under H1 and H2.
+        type: class-toggle
+        default: false
+    -
+        id: br-heading-index
+        title: Heading level index
+        description: Small monospace level marker in the margin beside headings in reading view.
+        type: class-toggle
+        default: false
+    -
+        id: br-atmosphere
+        title: Atmosphere
+        description: Scanlines, grain, vignette and live signage. Every one of these can be switched off.
+        type: heading
+        level: 1
+        collapsed: true
+    -
+        id: br-scanlines-off
+        title: Hide scanlines
+        description: Removes the CRT raster from the rails and sidebars. It is never drawn over prose.
+        type: class-toggle
+        default: false
+    -
+        id: br-scanline-opacity
+        title: Scanline strength
+        type: variable-number-slider
+        default: 30
+        min: 0
+        max: 100
+        step: 5
+    -
+        id: br-rain
+        title: Rain
+        description: Two layers of neon-lit rain falling at different depths across the whole window. Off by default because it is the loudest thing here.
+        type: class-toggle
+        default: false
+    -
+        id: br-rain-strength
+        title: Rain strength
+        type: variable-number-slider
+        default: 30
+        min: 5
+        max: 100
+        step: 5
+    -
+        id: br-searchlight-off
+        title: Hide searchlight
+        description: Removes the slow band of light that crosses the window every fifty seconds.
+        type: class-toggle
+        default: false
+    -
+        id: br-fringe-off
+        title: Plain title
+        description: Removes the holographic fringe — a one-pixel cyan and magenta split — from the note title and H1.
+        type: class-toggle
+        default: false
+    -
+        id: br-marks-off
+        title: Hide registration marks
+        description: Removes the small HUD brackets framing the editor pane.
+        type: class-toggle
+        default: false
+    -
+        id: br-grain
+        title: Grain
+        description: Photographic noise over the whole window.
+        type: class-toggle
+        default: false
+    -
+        id: br-vignette-off
+        title: Hide vignette
+        description: Removes the darkening at the far edges of the workspace.
+        type: class-toggle
+        default: false
+    -
+        id: br-still
+        title: Freeze the city
+        description: Stops the breathing glow on tags, file chips, the active tab and the active file. Motion is switched off automatically when the system asks for reduced motion, and it never runs in light mode.
+        type: class-toggle
+        default: false
+    -
+        id: br-life
+        title: Signage life
+        description: How far the breathing glow swings between dim and lit.
+        type: variable-number-slider
+        default: 58
+        min: 10
+        max: 100
+        step: 2
+    -
+        id: br-city-glow
+        title: City light
+        description: Coloured light pollution bleeding up from the streets at the bottom of the window.
+        type: variable-number-slider
+        default: 40
+        min: 0
+        max: 100
+        step: 5
+    -
+        id: br-colors
+        title: Custom colours
+        description: Replace any of the five neons. Each keeps a separate value for dark and light.
+        type: heading
+        level: 1
+        collapsed: true
+    -
+        id: br-cyan
+        title: Cyan
+        type: variable-themed-color
+        format: hex
+        opacity: false
+        default-dark: '#22e0f5'
+        default-light: '#00738c'
+    -
+        id: br-magenta
+        title: Magenta
+        type: variable-themed-color
+        format: hex
+        opacity: false
+        default-dark: '#ff4fa3'
+        default-light: '#c2005f'
+    -
+        id: br-amber
+        title: Amber
+        type: variable-themed-color
+        format: hex
+        opacity: false
+        default-dark: '#ffb13d'
+        default-light: '#8a5300'
+    -
+        id: br-acid
+        title: Acid
+        type: variable-themed-color
+        format: hex
+        opacity: false
+        default-dark: '#6ef7a0'
+        default-light: '#1c7040'
+    -
+        id: br-violet
+        title: Violet
+        type: variable-themed-color
+        format: hex
+        opacity: false
+        default-dark: '#a97bff'
+        default-light: '#5b34c4'
+
+*/
+
+
+/* ============================================================================
+   01  PALETTE — DARK · "Night City"
+   ----------------------------------------------------------------------------
+   Grounds are blue-black, never #000: a true black ground makes bright type
+   halate. The page (base-00) is the LIGHTEST plane in the window and the
+   chrome around it (base-20) is the darkest, so the writing surface reads as
+   a lit screen inside a dark city rather than a hole in a bright frame.
+   ========================================================================= */
+
+.theme-dark {
+  /* --- neon ---------------------------------------------------------- */
+  --br-cyan:    #22e0f5;   /* argon     — primary signal                  */
+  --br-magenta: #ff4fa3;   /* sign      — secondary signal                */
+  --br-amber:   #ffb13d;   /* sodium    — caution                         */
+  --br-acid:    #6ef7a0;   /* phosphor  — confirmation                    */
+  --br-violet:  #a97bff;   /* holo      — values, data                    */
+  --br-red:     #ff4d5e;   /* alarm                                       */
+  --br-cyan-rgb:    34, 224, 245;
+  --br-magenta-rgb: 255, 79, 163;
+  --br-amber-rgb:   255, 177, 61;
+  --br-acid-rgb:    110, 247, 160;
+  --br-violet-rgb:  169, 123, 255;
+
+  /* --- grounds, dark to light ---------------------------------------- */
+  --br-void:   #04060b;    /* outside the window, deepest shadow          */
+  --br-city:   #080b12;    /* rails, sidebars, status bar                 */
+  --br-panel:  #0b0f18;    /* raised chrome, code, inactive tabs          */
+  --br-page:   #0e131d;    /* the writing surface                         */
+  --br-raise:  #151c28;    /* hover, form fields                          */
+  --br-edge:   #1e2735;    /* hairlines                                   */
+  --br-edge-2: #2a3548;    /* hairlines, hover                            */
+  --br-edge-3: #3a4760;    /* focus                                       */
+
+  /* --- type ---------------------------------------------------------- */
+  --br-text-bright: #eef4fb;
+  --br-text:        #c8d3e2;   /* 11.6:1 on --br-page                     */
+  --br-text-muted:  #94a1b5;   /* 7.1:1                                   */
+  --br-text-faint:  #78869c;   /* 5.0:1 — small UI text still clears AA   */
+  --br-text-ghost:  #566276;   /* 3.4:1 — ornament only, never a label    */
+
+  --br-shadow: rgba(0, 0, 0, 0.55);
+  --br-on-signal: #04060b;
+
+  --highlight-mix-blend-mode: lighten;
+  --br-tint-weak: 8%;
+  --br-tint: 14%;
+  --br-tint-strong: 22%;
+}
+
+/* ---- map onto Obsidian's base ramp -------------------------------------- */
+.theme-dark {
+  --color-base-00: var(--br-page);
+  --color-base-05: var(--br-panel);
+  --color-base-10: var(--br-panel);
+  --color-base-20: var(--br-city);
+  --color-base-25: var(--br-raise);
+  --color-base-30: var(--br-edge);
+  --color-base-35: var(--br-edge-2);
+  --color-base-40: var(--br-edge-3);
+  --color-base-50: var(--br-text-faint);
+  --color-base-60: #74819a;
+  --color-base-70: var(--br-text-muted);
+  --color-base-100: var(--br-text);
+
+  --color-red:    var(--br-red);
+  --color-orange: var(--br-amber);
+  --color-yellow: #ffe14d;
+  --color-green:  var(--br-acid);
+  --color-cyan:   var(--br-cyan);
+  --color-blue:   #3fb4ff;
+  --color-purple: var(--br-violet);
+  --color-pink:   var(--br-magenta);
+  --color-red-rgb:    255, 77, 94;
+  --color-orange-rgb: 255, 177, 61;
+  --color-yellow-rgb: 255, 225, 77;
+  --color-green-rgb:  110, 247, 160;
+  --color-cyan-rgb:   34, 224, 245;
+  --color-blue-rgb:   63, 180, 255;
+  --color-purple-rgb: 169, 123, 255;
+  --color-pink-rgb:   255, 79, 163;
+
+  --background-secondary-alt: var(--br-void);
+  --background-modifier-hover: color-mix(in oklch, var(--br-signal) 9%, transparent);
+  --background-modifier-active-hover: color-mix(in oklch, var(--br-signal) 16%, transparent);
+  --background-modifier-cover: rgba(2, 4, 8, 0.66);
+  --background-modifier-box-shadow: var(--br-shadow);
+  --background-modifier-form-field: var(--br-raise);
+  --text-on-accent: var(--br-on-signal);
+  --text-on-accent-inverted: var(--br-text-bright);
+
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.3), 0 4px 18px rgba(0,0,0,.34);
+  --shadow-s:  0 1px 2px rgba(0,0,0,.34), 0 4px 14px rgba(0,0,0,.4), 0 14px 40px rgba(0,0,0,.42);
+  --shadow-l:  0 2px 8px rgba(0,0,0,.38), 0 10px 34px rgba(0,0,0,.46), 0 34px 90px rgba(0,0,0,.5);
+
+  --input-shadow: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 10%, transparent);
+  --input-shadow-hover: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 22%, transparent);
+
+  /* The scrollbar is machined steel with a trace of argon in it, never a lit
+     bar. These sit at class specificity because core ships
+     `.mod-macos { --scrollbar-thumb-bg: gray }`, which outranks `body`. */
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb-bg: color-mix(in oklch, var(--br-signal) 24%, var(--br-edge-3));
+  --scrollbar-active-thumb-bg: color-mix(in oklch, var(--br-signal) 52%, var(--br-edge-3));
+}
+
+
+/* ============================================================================
+   02  PALETTE — LIGHT · "Day Shift"
+   ----------------------------------------------------------------------------
+   Daylight in the same city: smog-pale concrete, printed signage, hard shadow.
+   The neon survives as saturated INK — same hues, pulled down to a lightness
+   that passes contrast on paper. Glow is dropped and replaced by crisp rules,
+   because a glow on white is just blur.
+   ========================================================================= */
+
+.theme-light {
+  --br-cyan:    #00738c;
+  --br-magenta: #c2005f;
+  --br-amber:   #8a5300;
+  --br-acid:    #1c7040;
+  --br-violet:  #5b34c4;
+  --br-red:     #c11f2c;
+  --br-cyan-rgb:    0, 115, 140;
+  --br-magenta-rgb: 194, 0, 95;
+  --br-amber-rgb:   138, 83, 0;
+  --br-acid-rgb:    28, 112, 64;
+  --br-violet-rgb:  91, 52, 196;
+
+  --br-void:   #c3cad6;
+  --br-city:   #e4e9f0;
+  --br-panel:  #edf0f5;
+  --br-page:   #f7f9fc;
+  --br-raise:  #ffffff;
+  --br-edge:   #d3dae4;
+  --br-edge-2: #bcc6d4;
+  --br-edge-3: #9aa6b8;
+
+  --br-text-bright: #05080e;
+  --br-text:        #161c26;   /* 15.4:1 on --br-page                     */
+  --br-text-muted:  #515c6e;   /* 6.4:1                                   */
+  --br-text-faint:  #5c6879;   /* 6.1:1 on the page, 4.6:1 on the rails   */
+  --br-text-ghost:  #8794a6;   /* 3.2:1                                   */
+
+  --br-shadow: rgba(16, 24, 40, 0.16);
+  --br-on-signal: #ffffff;
+
+  --highlight-mix-blend-mode: darken;
+  --br-glow-strength: 0;   /* a glow on paper is just blur */
+  --br-tint-weak: 6%;
+  --br-tint: 11%;
+  --br-tint-strong: 18%;
+}
+
+.theme-light {
+  --color-base-00: var(--br-page);
+  --color-base-05: var(--br-panel);
+  --color-base-10: var(--br-panel);
+  --color-base-20: var(--br-city);
+  --color-base-25: var(--br-raise);
+  --color-base-30: var(--br-edge);
+  --color-base-35: var(--br-edge-2);
+  --color-base-40: var(--br-edge-3);
+  --color-base-50: var(--br-text-faint);
+  --color-base-60: #6c7788;
+  --color-base-70: var(--br-text-muted);
+  --color-base-100: var(--br-text);
+
+  --color-red:    var(--br-red);
+  --color-orange: var(--br-amber);
+  --color-yellow: #8a6a00;
+  --color-green:  var(--br-acid);
+  --color-cyan:   var(--br-cyan);
+  --color-blue:   #0b5fd0;
+  --color-purple: var(--br-violet);
+  --color-pink:   var(--br-magenta);
+  --color-red-rgb:    193, 31, 44;
+  --color-orange-rgb: 138, 83, 0;
+  --color-yellow-rgb: 138, 106, 0;
+  --color-green-rgb:  28, 112, 64;
+  --color-cyan-rgb:   0, 115, 140;
+  --color-blue-rgb:   11, 95, 208;
+  --color-purple-rgb: 91, 52, 196;
+  --color-pink-rgb:   194, 0, 95;
+
+  --background-secondary-alt: var(--br-void);
+  --background-modifier-hover: color-mix(in oklch, var(--br-signal) 10%, transparent);
+  --background-modifier-active-hover: color-mix(in oklch, var(--br-signal) 16%, transparent);
+  --background-modifier-cover: rgba(90, 102, 122, 0.36);
+  --background-modifier-box-shadow: var(--br-shadow);
+  --background-modifier-form-field: var(--br-raise);
+  --text-on-accent: var(--br-on-signal);
+  --text-on-accent-inverted: var(--br-text-bright);
+
+  --shadow-xs: 0 1px 2px rgba(16,24,40,.06), 0 3px 10px rgba(16,24,40,.07);
+  --shadow-s:  0 1px 2px rgba(16,24,40,.08), 0 4px 12px rgba(16,24,40,.1), 0 12px 32px rgba(16,24,40,.08);
+  --shadow-l:  0 2px 6px rgba(16,24,40,.1), 0 10px 28px rgba(16,24,40,.12), 0 30px 70px rgba(16,24,40,.12);
+
+  --input-shadow: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 16%, transparent);
+  --input-shadow-hover: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 30%, transparent);
+
+  --scrollbar-bg: transparent;
+  --scrollbar-thumb-bg: color-mix(in oklch, var(--br-signal) 22%, var(--br-edge-2));
+  --scrollbar-active-thumb-bg: color-mix(in oklch, var(--br-signal) 46%, var(--br-edge-3));
+
+  --nav-item-color-active: var(--br-text-bright);
+  --nav-item-color-selected: var(--br-text-bright);
+  --nav-item-background-selected: color-mix(in oklch, var(--br-signal) 9%, transparent);
+  --nav-item-background-active: color-mix(in oklch, var(--br-signal) 8%, transparent);
+  --tag-background: color-mix(in oklch, var(--br-signal) 6%, transparent);
+  --tag-background-hover: var(--br-signal);
+}
+
+
+/* ============================================================================
+   03  FOUNDATIONS
+   ========================================================================= */
+
+body {
+  /* --- signal assignment ---------------------------------------------- */
+  --br-signal: var(--br-cyan);
+  --br-signal-rgb: var(--br-cyan-rgb);
+  --br-second: var(--br-magenta);
+  --br-second-rgb: var(--br-magenta-rgb);
+
+  /* --- tunables (Style Settings overrides these on body.css-settings-manager) */
+  --br-glow-strength: 42;
+  --br-scanline-opacity: 30;
+  --br-cut: 10px;
+  --br-line-height: 1.65;
+  --br-line-width: 740px;
+
+  /* --- derived glow ---------------------------------------------------- */
+  --br-glow-mix:  calc(var(--br-glow-strength) * 1%);
+  --br-glow-soft: calc(var(--br-glow-strength) * 0.45%);
+  --br-glow-r:    calc(var(--br-glow-strength) * 0.34px);
+  --br-glow-r-lg: calc(var(--br-glow-strength) * 0.7px);
+
+  --br-bloom-signal: 0 0 var(--br-glow-r-lg) color-mix(in oklch, var(--br-signal) var(--br-glow-soft), transparent);
+  --br-bloom-second: 0 0 var(--br-glow-r-lg) color-mix(in oklch, var(--br-second) var(--br-glow-soft), transparent);
+  --br-text-bloom:   0 0 var(--br-glow-r) color-mix(in oklch, var(--br-second) var(--br-glow-mix), transparent);
+
+  /* --- bevel geometry -------------------------------------------------- */
+  --br-clip-tr: polygon(0 0, calc(100% - var(--br-cut)) 0, 100% var(--br-cut), 100% 100%, 0 100%);
+  --br-clip-bl: polygon(0 0, 100% 0, 100% 100%, var(--br-cut) 100%, 0 calc(100% - var(--br-cut)));
+  --br-clip-both: polygon(0 0, calc(100% - var(--br-cut)) 0, 100% var(--br-cut), 100% 100%, var(--br-cut) 100%, 0 calc(100% - var(--br-cut)));
+  /* a tab: vertical sides, both top corners chamfered, open along the bottom
+     where it meets the page */
+  --br-cut-tab: clamp(4px, calc(var(--br-cut) * 0.72), 11px);
+  --br-clip-tab: polygon(
+      0 100%, 0 var(--br-cut-tab),
+      var(--br-cut-tab) 0, calc(100% - var(--br-cut-tab)) 0,
+      100% var(--br-cut-tab), 100% 100%);
+
+  /* --- fonts ----------------------------------------------------------- */
+  --br-font-read: "iA Writer Quattro V", "iA Writer Quattro S", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --br-font-ui:   "Geist", ui-sans-serif, -apple-system, system-ui, "Segoe UI", sans-serif;
+  --br-font-hud:  "Azeret Mono", "Space Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --br-font-code: "Azeret Mono", "Noto Sans Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --br-font-head: var(--br-font-hud);
+
+  --font-text-theme: var(--br-font-read);
+  --font-interface-theme: var(--br-font-ui);
+  --font-monospace-theme: var(--br-font-code);
+
+  /* --- rhythm ---------------------------------------------------------- */
+  --line-height-normal: var(--br-line-height);
+  --line-height-tight: 1.35;
+  --p-spacing: 0.95rem;
+  --file-line-width: var(--br-line-width);
+  --file-margins: var(--size-4-8) var(--size-4-8) 40vh;
+  --heading-spacing: calc(var(--p-spacing) * 2.1);
+  --list-spacing: 0.12em;
+  --font-weight: 400;
+  --bold-modifier: 250;
+  --bold-color: var(--br-text-bright);
+
+  /* --- geometry -------------------------------------------------------- */
+  --radius-s: 3px;
+  --radius-m: 4px;
+  --radius-l: 6px;
+  --radius-xl: 10px;
+  --border-width: 1px;
+  --divider-width: 1px;
+  --divider-width-hover: 2px;
+  --scrollbar-width: 10px;
+  --scrollbar-height: 10px;
+  --ribbon-width: 46px;
+  --header-height: 38px;
+  --image-radius: 2px;
+  --hr-thickness: 1px;
+
+  /* --- accent wiring --------------------------------------------------- */
+  --accent-h: 186;
+  --accent-s: 91%;
+  --accent-l: 55%;
+  --caret-color: var(--br-signal);
+  --text-selection: color-mix(in oklch, var(--br-second) 26%, transparent);
+  --background-modifier-border: color-mix(in oklch, var(--br-signal) var(--br-tint-weak), var(--br-edge));
+  --background-modifier-border-hover: color-mix(in oklch, var(--br-signal) var(--br-tint), var(--br-edge-2));
+  --background-modifier-border-focus: var(--br-signal);
+  --divider-color: color-mix(in oklch, var(--br-signal) var(--br-tint-weak), var(--br-edge));
+  --divider-color-hover: var(--br-signal);
+  --hr-color: color-mix(in oklch, var(--br-signal) 30%, transparent);
+  --indentation-guide-color: color-mix(in oklch, var(--br-signal) 14%, transparent);
+  --indentation-guide-color-active: color-mix(in oklch, var(--br-signal) 42%, transparent);
+  --text-highlight-bg: color-mix(in oklch, var(--br-amber) 28%, transparent);
+}
+
+/* Core declares the accent chain inside `.theme-dark`, which outranks `body`.
+   Without this block the accent silently falls back to the --accent-h/s/l
+   triple and a custom colour set in Style Settings never reaches the UI. */
+.theme-dark, .theme-light {
+  --color-accent: var(--br-signal);
+  --color-accent-1: color-mix(in oklch, var(--br-signal) 86%, white 14%);
+  --color-accent-2: color-mix(in oklch, var(--br-signal) 70%, white 30%);
+  --interactive-accent: var(--br-signal);
+  --interactive-accent-hover: color-mix(in oklch, var(--br-signal) 84%, white 16%);
+  --text-accent: var(--br-signal);
+  --text-accent-hover: var(--br-second);
+}
+
+/* --- signal presets ------------------------------------------------------ */
+body.br-signal-cyan    { --br-signal: var(--br-cyan);    --br-signal-rgb: var(--br-cyan-rgb);    --accent-h: 186; --accent-s: 91%; --accent-l: 55%; }
+body.br-signal-magenta { --br-signal: var(--br-magenta); --br-signal-rgb: var(--br-magenta-rgb); --accent-h: 331; --accent-s: 100%; --accent-l: 65%; }
+body.br-signal-acid    { --br-signal: var(--br-acid);    --br-signal-rgb: var(--br-acid-rgb);    --accent-h: 142; --accent-s: 89%; --accent-l: 70%; }
+body.br-signal-amber   { --br-signal: var(--br-amber);   --br-signal-rgb: var(--br-amber-rgb);   --accent-h: 36;  --accent-s: 100%; --accent-l: 62%; }
+body.br-signal-violet  { --br-signal: var(--br-violet);  --br-signal-rgb: var(--br-violet-rgb);  --accent-h: 262; --accent-s: 100%; --accent-l: 74%; }
+
+body.br-second-magenta { --br-second: var(--br-magenta); --br-second-rgb: var(--br-magenta-rgb); }
+body.br-second-cyan    { --br-second: var(--br-cyan);    --br-second-rgb: var(--br-cyan-rgb); }
+body.br-second-amber   { --br-second: var(--br-amber);   --br-second-rgb: var(--br-amber-rgb); }
+body.br-second-acid    { --br-second: var(--br-acid);    --br-second-rgb: var(--br-acid-rgb); }
+body.br-second-violet  { --br-second: var(--br-violet);  --br-second-rgb: var(--br-violet-rgb); }
+
+/* --- reading / signage face presets -------------------------------------- */
+body.br-text-quattro  { --font-text-theme: "iA Writer Quattro V", ui-sans-serif, system-ui, sans-serif; }
+body.br-text-geist    { --font-text-theme: "Geist", ui-sans-serif, system-ui, sans-serif; }
+body.br-text-literata { --font-text-theme: "Literata", "IBM Plex Serif", Georgia, serif; }
+body.br-text-system   { --font-text-theme: var(--font-default); }
+body.br-head-azeret   { --br-font-head: "Azeret Mono", ui-monospace, monospace; }
+body.br-head-geist    { --br-font-head: "Geist", ui-sans-serif, system-ui, sans-serif; }
+body.br-head-space    { --br-font-head: "Space Mono", ui-monospace, monospace; }
+body.br-head-match    { --br-font-head: var(--font-text); }
+
+
+/* ============================================================================
+   04  WINDOW CHROME
+   ----------------------------------------------------------------------------
+   The frame is the city: darker than the page, rasterised, edged in argon.
+   ========================================================================= */
+
+body {
+  --br-scanline: repeating-linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--br-signal) calc(var(--br-scanline-opacity) * 0.14%), transparent) 0 1px,
+      transparent 1px 3px);
+  --br-hairline: color-mix(in oklch, var(--br-signal) 18%, transparent);
+  --br-hairline-hot: color-mix(in oklch, var(--br-signal) 45%, transparent);
+  /* The frame is tracked separately from content borders so that grabbing a
+     divider can light the window's structure without flashing the code blocks
+     and tables inside it. */
+  --br-frame: var(--br-hairline);
+  --br-frame-hot: var(--br-hairline-hot);
+
+  --titlebar-background: var(--br-city);
+  --titlebar-background-focused: var(--br-city);
+  --titlebar-text-color: var(--br-text-faint);
+  --titlebar-text-color-focused: var(--br-text-muted);
+  --titlebar-text-weight: var(--font-medium);
+  --titlebar-border-width: 0;
+
+  --ribbon-background: var(--br-city);
+  --ribbon-background-collapsed: var(--br-city);
+
+  --status-bar-background: var(--br-city);
+  --status-bar-border-color: var(--br-frame);
+  --status-bar-border-width: 1px 0 0 1px;
+  --status-bar-text-color: var(--br-text-faint);
+  --status-bar-font-size: 11px;
+  --status-bar-radius: 0;
+
+  --workspace-background-translucent: color-mix(in oklch, var(--br-void) 72%, transparent);
+  --vault-profile-font-size: 11px;
+  --vault-profile-color: var(--br-text-muted);
+}
+
+.workspace-ribbon {
+  background-color: var(--br-city);
+  background-image: var(--br-scanline);
+}
+.workspace-ribbon.mod-primary { border-right: 1px solid var(--br-frame); }
+.workspace-ribbon.mod-secondary { border-left: 1px solid var(--br-frame); }
+body.br-scanlines-off .workspace-ribbon { background-image: none; }
+
+/* Ribbon icons are controls, not ornament: they sit at the same value as the
+   rest of the interface text so they stay findable. --br-text-ghost is for
+   decoration only and must never carry a control. */
+.side-dock-ribbon-action,
+.workspace-drawer-active-tab-header .clickable-icon { color: var(--br-text-muted); }
+.side-dock-ribbon-action:hover,
+.side-dock-ribbon-action.is-active,
+.clickable-icon.is-active {
+  color: var(--br-signal);
+  filter: drop-shadow(0 0 var(--br-glow-r) color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent));
+}
+
+/* ---- status bar: a HUD readout ------------------------------------------ */
+.status-bar {
+  background-color: var(--br-city);
+  background-image: var(--br-scanline);
+  border-top: 1px solid var(--br-frame);
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.06em;
+  backdrop-filter: none;
+}
+body.br-scanlines-off .status-bar { background-image: none; }
+body:not(.br-hud-sentence-case) .status-bar-item { text-transform: uppercase; }
+.status-bar-item { color: var(--br-text-faint); }
+.status-bar-item:hover { color: var(--br-signal); }
+.status-bar-item.mod-clickable:hover { background-color: color-mix(in oklch, var(--br-signal) 10%, transparent); }
+
+/* ---- dividers ------------------------------------------------------------
+   Obsidian puts `is-active` on the handle being dragged, so :has() can lift
+   that one local event to the whole window: grab any divider and every
+   division in the frame comes up together, like a schematic being powered.
+   The lit state is driven by two variables so the rules below stay readable. */
+.workspace-leaf-resize-handle { background-color: transparent; }
+.workspace-leaf-resize-handle:hover {
+  background-color: var(--br-signal);
+  box-shadow: var(--br-bloom-signal);
+}
+
+body:has(.workspace-leaf-resize-handle.is-active) {
+  --br-frame: var(--br-signal);
+  --br-frame-hot: var(--br-signal);
+  --divider-color: var(--br-signal);
+  --br-division: var(--br-signal);
+  --br-division-bloom: var(--br-bloom-signal);
+}
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-leaf-resize-handle {
+  background-color: var(--br-division);
+  box-shadow: var(--br-division-bloom);
+}
+/* belt and braces: these four carry the frame explicitly, so they light even
+   if a future build stops drawing them from the variables above */
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-split.mod-left-split,
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-split.mod-right-split,
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-ribbon,
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-tab-header-container,
+body:has(.workspace-leaf-resize-handle.is-active) .status-bar {
+  border-color: var(--br-division);
+}
+body:has(.workspace-leaf-resize-handle.is-active) .workspace-tab-header-container,
+body:has(.workspace-leaf-resize-handle.is-active) .status-bar {
+  box-shadow: 0 0 var(--br-glow-r-lg) calc(var(--br-glow-r-lg) * -0.6)
+              color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent);
+}
+/* Obsidian only uses the webkit pseudo-elements when "styled scrollbars" is on
+   in Appearance; otherwise it drives the native bar through scrollbar-color. */
+body.styled-scrollbars ::-webkit-scrollbar-thumb {
+  border-radius: 0;
+  background-clip: padding-box;
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 26%, transparent);
+}
+body.styled-scrollbars ::-webkit-scrollbar-thumb:hover,
+body.styled-scrollbars ::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-active-thumb-bg);
+}
+
+/* ---- vault name ---------------------------------------------------------- */
+.workspace-drawer-vault-name,
+.vault-profile-name {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: var(--br-text-muted);
+}
+body:not(.br-hud-sentence-case) .vault-profile-name { text-transform: uppercase; }
+
+/* Settings lives here, at the foot of the left sidebar. It is the only route
+   to it when the sidebar is open, so it gets a proper hover target. */
+.workspace-sidedock-vault-profile .clickable-icon { color: var(--br-text-muted); }
+
+/* --- the settings icon ----------------------------------------------------
+   CSS cannot rewrite the path data of an inline SVG, so the core glyph is
+   hidden with visibility (not display, which would collapse the button and
+   shift the row) and the replacement is painted over it as an alpha mask.
+   Filling the mask with currentColor means it inherits every state the button
+   already has, including the hover bloom below. Swap --br-settings-icon for
+   any single-colour SVG to change it again. */
+body {
+  --br-help-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z'/%3E%3Cpath d='M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3'/%3E%3Cline x1='12' x2='12.01' y1='17' y2='17'/%3E%3C/svg%3E");
+  --br-settings-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 14-1 1'/%3E%3Cpath d='m13.75 18.25-1.25 1.42'/%3E%3Cpath d='M17.775 5.654a15.68 15.68 0 0 0-12.121 12.12'/%3E%3Cpath d='M18.8 9.3a1 1 0 0 0 2.1 7.7'/%3E%3Cpath d='M21.964 20.732a1 1 0 0 1-1.232 1.232l-18-5a1 1 0 0 1-.695-1.232A19.68 19.68 0 0 1 15.732 2.037a1 1 0 0 1 1.232.695z'/%3E%3C/svg%3E");
+}
+.clickable-icon:has(> svg.lucide-settings),
+.clickable-icon:has(> svg.help) { position: relative; }
+.clickable-icon > svg.lucide-settings,
+.clickable-icon > svg.help { visibility: hidden; }
+.clickable-icon:has(> svg.lucide-settings)::before,
+.clickable-icon:has(> svg.help)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: var(--icon-s, 16px);
+  height: var(--icon-s, 16px);
+  background-color: currentColor;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.clickable-icon:has(> svg.lucide-settings)::before {
+  -webkit-mask-image: var(--br-settings-icon);
+  mask-image: var(--br-settings-icon);
+}
+.clickable-icon:has(> svg.help)::before {
+  -webkit-mask-image: var(--br-help-icon);
+  mask-image: var(--br-help-icon);
+}
+.workspace-sidedock-vault-profile .clickable-icon:hover {
+  color: var(--br-signal);
+  background-color: color-mix(in oklch, var(--br-signal) 12%, transparent);
+  filter: drop-shadow(0 0 var(--br-glow-r) color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent));
+}
+
+
+/* ============================================================================
+   05  SIDEBARS · FILE EXPLORER · SEARCH · OUTLINE
+   ========================================================================= */
+
+body {
+  --nav-item-size: 13px;
+  --nav-item-radius: 2px;
+  --nav-item-color: var(--br-text-muted);
+  --nav-item-color-hover: var(--br-text-bright);
+  --nav-item-color-active: var(--br-signal);
+  --nav-item-color-selected: var(--br-signal);
+  --nav-item-background-active: color-mix(in oklch, var(--br-signal) 10%, transparent);
+  --nav-item-background-selected: color-mix(in oklch, var(--br-signal) 12%, transparent);
+  --nav-item-weight-active: var(--font-medium);
+  --nav-heading-color: var(--br-text-muted);
+  --nav-heading-weight: var(--font-medium);
+  --nav-indentation-guide-color: color-mix(in oklch, var(--br-signal) 16%, transparent);
+  --nav-collapse-icon-color: var(--br-text-ghost);
+  --nav-collapse-icon-color-collapsed: var(--br-signal);
+  --search-result-background: transparent;
+  --search-icon-color: var(--br-text-faint);
+}
+
+.workspace-split.mod-left-split .workspace-leaf-content,
+.workspace-split.mod-right-split .workspace-leaf-content {
+  background-color: var(--br-city);
+  background-image: var(--br-scanline);
+}
+body.br-scanlines-off .workspace-split.mod-left-split .workspace-leaf-content,
+body.br-scanlines-off .workspace-split.mod-right-split .workspace-leaf-content { background-image: none; }
+
+.workspace-split.mod-left-split { border-right: 1px solid var(--br-frame); }
+.workspace-split.mod-right-split { border-left: 1px solid var(--br-frame); }
+
+/* folders read as sectors: monospace, letterspaced, quiet */
+.nav-folder-title-content {
+  font-family: var(--br-font-hud);
+  font-size: 11.5px;
+  letter-spacing: 0.055em;
+  color: var(--br-text-muted);
+}
+body:not(.br-hud-sentence-case) .nav-folder-title-content { text-transform: uppercase; }
+
+.nav-file-title { position: relative; }
+.nav-file-title-content { font-family: var(--font-interface); }
+
+/* the open file is lit from the left edge */
+.tree-item-self.is-active::before,
+.nav-file-title.is-active::before {
+  content: "";
+  position: absolute;
+  inset-block: 2px;
+  inset-inline-start: 0;
+  width: 2px;
+  background: var(--br-signal);
+  box-shadow: var(--br-bloom-signal);
+}
+.tree-item-self.is-active { color: var(--br-signal); }
+
+.nav-file-tag {
+  font-family: var(--br-font-hud);
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  color: var(--br-text-faint);
+  background: transparent;
+  border: 1px solid var(--br-hairline);
+  border-radius: 0;
+  padding: 1px 4px;
+}
+
+/* headers above the panes */
+.nav-header,
+.workspace-tab-header-container-inner { background: transparent; }
+.nav-buttons-container .clickable-icon { color: var(--br-text-muted); }
+.nav-buttons-container .clickable-icon:hover { color: var(--br-signal); }
+
+/* The search field's trailing buttons sit inside the input's padding box, so a
+   long placeholder runs underneath them. Core reserves 28px, which is not
+   enough once the label is translated; this reserves the real button width. */
+.search-input-container input {
+  padding-right: 52px;
+  text-overflow: ellipsis;
+}
+
+/* search */
+.search-result-file-title {
+  font-family: var(--br-font-hud);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--br-text-muted);
+}
+.search-result-file-matched-text,
+.suggestion-highlight {
+  background-color: color-mix(in oklch, var(--br-second) 26%, transparent);
+  color: var(--br-text-bright);
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--br-second) 30%, transparent);
+}
+.tree-item-flair {
+  font-family: var(--br-font-hud);
+  font-size: 10px;
+  color: var(--br-text-faint);
+}
+
+/* outline / backlinks / tag pane */
+.tag-pane-tag-count { font-family: var(--br-font-hud); }
+
+
+/* ---- dragging a file ------------------------------------------------------
+   A selected file carries `is-active` as well as `is-being-dragged`. The two
+   rules tie on specificity, so the theme's active colour was winning purely on
+   source order and painting cyan text on the cyan drag fill — contrast 1.00,
+   invisible. The drag state is given the heavier selector so it always wins,
+   and everything inside the row is pinned to the on-accent colour with it. */
+.tree-item-self.is-being-dragged,
+.tree-item-self.is-active.is-being-dragged,
+body:not(.is-grabbing) .tree-item-self.is-active.is-being-dragged:hover {
+  color: var(--text-on-accent);
+  background-color: var(--interactive-accent);
+  clip-path: var(--br-clip-tr);
+  filter: drop-shadow(0 0 calc(var(--br-glow-r-lg) * 0.7)
+          color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent));
+}
+.tree-item-self.is-being-dragged .tree-item-inner,
+.tree-item-self.is-being-dragged .nav-file-title-content,
+.tree-item-self.is-being-dragged .tree-item-icon,
+.tree-item-self.is-being-dragged .collapse-icon { color: var(--text-on-accent); }
+.tree-item-self.is-being-dragged .nav-file-tag {
+  color: var(--text-on-accent);
+  border-color: color-mix(in oklch, var(--br-on-signal) 35%, transparent);
+}
+.tree-item-self.is-being-dragged .nav-file-tag::after { display: none; }
+/* the active row's edge bar would be signal-on-signal while dragging */
+.tree-item-self.is-active.is-being-dragged::before {
+  background: var(--text-on-accent);
+  box-shadow: none;
+  animation: none;
+}
+
+/* the drop target acquires, and keeps pulsing until you let go */
+.tree-item-self.is-being-dragged-over,
+.nav-folder.is-being-dragged-over {
+  background-color: color-mix(in oklch, var(--br-signal) 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 50%, transparent);
+  border-radius: 0;
+}
+.theme-dark:not(.br-still) .tree-item-self.is-being-dragged-over::after {
+  opacity: 1;
+  background: linear-gradient(90deg,
+      color-mix(in oklch, var(--br-signal) 18%, transparent),
+      transparent 60%);
+  animation: br-breathe 1.1s ease-in-out infinite;
+}
+
+/* the ghost under the cursor is a HUD card, not a tooltip */
+.drag-ghost {
+  background-color: color-mix(in oklch, var(--br-panel) 94%, transparent);
+  color: var(--br-text-bright);
+  border: 1px solid var(--br-hairline-hot);
+  border-inline-start: 2px solid var(--br-signal);
+  border-radius: 0;
+  clip-path: var(--br-clip-tr);
+  box-shadow: none;
+  backdrop-filter: var(--blur-s);
+  font-family: var(--font-interface);
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45))
+          drop-shadow(0 0 calc(var(--br-glow-r-lg) * 0.6)
+          color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent));
+}
+.drag-ghost-self > .svg-icon { color: var(--br-signal); opacity: 1; }
+.drag-ghost-action {
+  font-family: var(--br-font-hud);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--br-signal);
+  opacity: 1;
+}
+body:not(.br-hud-sentence-case) .drag-ghost-action { text-transform: uppercase; }
+
+
+/* ============================================================================
+   06  TABS AND VIEW HEADERS
+   ----------------------------------------------------------------------------
+   The active tab is a lit sign above the page: an argon strip along its top
+   edge, the tab body the same colour as the page it opens onto.
+   ========================================================================= */
+
+body {
+  --tab-container-background: var(--br-city);
+  --tab-background-active: var(--br-page);
+  --tab-text-color: var(--br-text-faint);
+  --tab-text-color-active: var(--br-text-muted);
+  --tab-text-color-focused: var(--br-text-muted);
+  --tab-text-color-focused-active: var(--br-text-muted);
+  --tab-text-color-focused-active-current: var(--br-text-bright);
+  --tab-font-size: 12.5px;
+  --tab-radius-active: 0;
+  --tab-curve: 0px;
+  --tab-outline-color: var(--br-frame);
+  --tab-divider-color: transparent;
+
+  --file-header-font: var(--br-font-hud);
+  --file-header-font-size: 11px;
+  --file-header-font-weight: 400;
+}
+
+.workspace-tab-header-container {
+  background-color: var(--br-city);
+  background-image: var(--br-scanline);
+  border-bottom: 1px solid var(--br-frame);
+}
+body.br-scanlines-off .workspace-tab-header-container { background-image: none; }
+
+.workspace-tab-header {
+  position: relative;
+  clip-path: var(--br-clip-tab);
+}
+.workspace-tab-header-inner {
+  position: relative;
+  z-index: 1;
+  border-radius: 0;
+}
+.workspace-tab-header-inner-title { font-family: var(--font-interface); }
+
+/* The active tab is drawn as a lit outline: the header itself is painted in
+   the signal colour and an inset ::after covers all of it but a one-pixel
+   frame, leaving the chamfers and the top edge glowing. drop-shadow is used
+   rather than box-shadow because it follows the clip path instead of the
+   rectangle underneath it. */
+.mod-root .workspace-tab-header.is-active {
+  background-color: var(--br-signal);
+  filter: drop-shadow(0 0 calc(var(--br-glow-r-lg) * 0.55)
+          color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent));
+}
+.mod-root .workspace-tab-header.is-active::after {
+  content: "";
+  position: absolute;
+  inset: 1px 1px 0 1px;
+  /* the core tab-curve rule pins this pseudo-element to 0x0 and rounds it
+     to an ellipse; inset alone cannot undo either, so size and radius are
+     handed back explicitly */
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  box-shadow: none;
+  z-index: 0;
+  background-color: var(--tab-background-active);
+  clip-path: var(--br-clip-tab);
+}
+.mod-root .workspace-tab-header.is-active .workspace-tab-header-inner-icon { color: var(--br-signal); }
+
+/* inactive tabs keep the same silhouette, drawn only when pointed at */
+.mod-root .workspace-tab-header:not(.is-active):hover {
+  background-color: color-mix(in oklch, var(--br-signal) 9%, transparent);
+}
+
+/* breadcrumb / inline file header reads as a coordinate readout */
+.view-header-title-container,
+.view-header-breadcrumb,
+.view-header-title {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.05em;
+  font-size: 11px;
+}
+.view-header-breadcrumb { color: var(--br-text-faint); }
+.view-header-breadcrumb-separator { color: var(--br-signal); opacity: 0.55; }
+.view-header { background: transparent; border-bottom: 1px solid transparent; }
+
+
+/* ============================================================================
+   07  EDITOR — HEADINGS, PROSE, LISTS, QUOTES, LINKS, TAGS
+   ----------------------------------------------------------------------------
+   Hierarchy descends by brightness, not by hue. Exactly two neon moments:
+   the title's bloom and the H2's argon. Everything below that is grey, so a
+   long document still reads as a document.
+   ========================================================================= */
+
+body {
+  --h1-font: var(--br-font-head);
+  --h2-font: var(--br-font-head);
+  --h3-font: var(--br-font-head);
+  --h4-font: var(--br-font-head);
+  --h5-font: var(--br-font-hud);
+  --h6-font: var(--br-font-hud);
+
+  --h1-size: 1.62em;  --h1-weight: 600; --h1-line-height: 1.2;  --h1-letter-spacing: -0.03em;
+  --h2-size: 1.3em;   --h2-weight: 600; --h2-line-height: 1.26; --h2-letter-spacing: -0.022em;
+  --h3-size: 1.16em;  --h3-weight: 600; --h3-line-height: 1.32; --h3-letter-spacing: -0.012em;
+  --h4-size: 1em;     --h4-weight: 600; --h4-line-height: 1.4;  --h4-letter-spacing: 0;
+  --h5-size: 0.88em;  --h5-weight: 500; --h5-line-height: 1.45; --h5-letter-spacing: 0.1em;
+  --h6-size: 0.82em;  --h6-weight: 500; --h6-line-height: 1.45; --h6-letter-spacing: 0.13em;
+
+  --h1-color: var(--br-text-bright);
+  --h2-color: var(--br-signal);
+  --h3-color: var(--br-text-bright);
+  --h4-color: var(--br-text);
+  --h5-color: var(--br-text-muted);
+  --h6-color: var(--br-text-faint);
+  --heading-formatting: var(--br-text-ghost);
+  --metadata-label-font-size: 11px;
+
+  --inline-title-margin-bottom: 0.15em;
+  --link-decoration: none;
+  --link-decoration-hover: none;
+  --link-weight: inherit;
+  --link-unresolved-opacity: 1;
+  --link-unresolved-color: var(--br-text-faint);
+  --link-unresolved-decoration-style: dashed;
+  --link-unresolved-decoration-color: color-mix(in oklch, var(--br-second) 55%, transparent);
+
+  --blockquote-border-thickness: 2px;
+  --blockquote-border-color: var(--br-signal);
+  --blockquote-color: var(--br-text-muted);
+  --blockquote-background-color: color-mix(in oklch, var(--br-signal) 4%, transparent);
+  --blockquote-font-style: normal;
+
+  --list-marker-color: color-mix(in oklch, var(--br-signal) 62%, var(--br-text-faint));
+  --list-marker-color-hover: var(--br-signal);
+  --list-marker-color-collapsed: var(--br-second);
+  --list-bullet-radius: 0;
+  --list-bullet-size: 0.28em;
+  --list-bullet-transform: rotate(45deg);
+
+  --checkbox-radius: 0;
+  --checkbox-border-color: color-mix(in oklch, var(--br-signal) 45%, transparent);
+  --checkbox-border-color-hover: var(--br-signal);
+  --checkbox-color: var(--br-signal);
+  --checkbox-color-hover: var(--br-second);
+  --checkbox-marker-color: var(--br-on-signal);
+  --checklist-done-color: var(--br-text-faint);
+
+  --embed-border-start: 2px solid color-mix(in oklch, var(--br-second) 55%, transparent);
+  --embed-padding: 0 0 0 var(--size-4-5);
+}
+
+/* headings share one family; the level is carried by size, weight and value.
+   A monospaced signage face sets wide, so long titles get balanced wrapping
+   instead of a one-word second line. */
+.markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,
+.markdown-rendered h4, .markdown-rendered h5, .markdown-rendered h6,
+.HyperMD-header, .cm-header, .inline-title {
+  font-feature-settings: "ss01" 1, "cv01" 1;
+  text-wrap: balance;
+}
+
+body:not(.br-hud-sentence-case) .markdown-rendered h5,
+body:not(.br-hud-sentence-case) .markdown-rendered h6,
+body:not(.br-hud-sentence-case) .HyperMD-header-5,
+body:not(.br-hud-sentence-case) .HyperMD-header-6 { text-transform: uppercase; }
+
+/* the title carries the only bloom in the document */
+.inline-title,
+.markdown-rendered h1,
+.HyperMD-header-1 {
+  text-shadow: var(--br-text-bloom);
+}
+
+/* ...and, in the dark, a one-pixel chromatic split, as though the glyphs were
+   projected slightly out of register. One pixel is deliberate: at two it stops
+   reading as a hologram and starts reading as a typo. */
+.theme-dark:not(.br-fringe-off) .inline-title,
+.theme-dark:not(.br-fringe-off) .markdown-rendered h1,
+.theme-dark:not(.br-fringe-off) .HyperMD-header-1 {
+  text-shadow:
+      -1px 0 0 color-mix(in oklch, var(--br-signal) 40%, transparent),
+       1px 0 0 color-mix(in oklch, var(--br-second) 40%, transparent),
+       var(--br-text-bloom);
+}
+
+/* a hairline that fades out to the right, painted as a background so it
+   survives both reading view and live preview without touching layout */
+body:not(.br-heading-rules-off) .inline-title,
+body:not(.br-heading-rules-off) .markdown-rendered h1,
+body:not(.br-heading-rules-off) .markdown-rendered h2,
+body:not(.br-heading-rules-off) .HyperMD-header-1,
+body:not(.br-heading-rules-off) .HyperMD-header-2 {
+  background-repeat: no-repeat;
+  background-position: 0 calc(100% - 0.12em);
+  background-size: 100% 1px;
+  padding-bottom: 0.22em;
+}
+body:not(.br-heading-rules-off) .inline-title,
+body:not(.br-heading-rules-off) .markdown-rendered h1,
+body:not(.br-heading-rules-off) .HyperMD-header-1 {
+  background-image: linear-gradient(to right,
+      color-mix(in oklch, var(--br-second) 70%, transparent),
+      color-mix(in oklch, var(--br-second) 12%, transparent) 38%,
+      transparent 72%);
+}
+body:not(.br-heading-rules-off) .markdown-rendered h2,
+body:not(.br-heading-rules-off) .HyperMD-header-2 {
+  background-image: linear-gradient(to right,
+      color-mix(in oklch, var(--br-signal) 55%, transparent),
+      color-mix(in oklch, var(--br-signal) 8%, transparent) 42%,
+      transparent 76%);
+}
+
+/* optional level index in the margin, reading view only */
+body.br-heading-index .markdown-preview-view h1,
+body.br-heading-index .markdown-preview-view h2,
+body.br-heading-index .markdown-preview-view h3,
+body.br-heading-index .markdown-preview-view h4,
+body.br-heading-index .markdown-preview-view h5,
+body.br-heading-index .markdown-preview-view h6 { position: relative; }
+body.br-heading-index .markdown-preview-view h1::before,
+body.br-heading-index .markdown-preview-view h2::before,
+body.br-heading-index .markdown-preview-view h3::before,
+body.br-heading-index .markdown-preview-view h4::before,
+body.br-heading-index .markdown-preview-view h5::before,
+body.br-heading-index .markdown-preview-view h6::before {
+  position: absolute;
+  right: calc(100% + 0.7em);
+  top: 0.32em;
+  font-family: var(--br-font-hud);
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--br-text-ghost);
+  text-shadow: none;
+  pointer-events: none;
+}
+body.br-heading-index .markdown-preview-view h1::before { content: "01"; color: color-mix(in oklch, var(--br-second) 70%, transparent); }
+body.br-heading-index .markdown-preview-view h2::before { content: "02"; color: color-mix(in oklch, var(--br-signal) 70%, transparent); }
+body.br-heading-index .markdown-preview-view h3::before { content: "03"; }
+body.br-heading-index .markdown-preview-view h4::before { content: "04"; }
+body.br-heading-index .markdown-preview-view h5::before { content: "05"; }
+body.br-heading-index .markdown-preview-view h6::before { content: "06"; }
+
+/* prose */
+.markdown-rendered p,
+.markdown-rendered li,
+.cm-line { text-rendering: optimizeLegibility; }
+.markdown-rendered strong, .cm-strong { color: var(--br-text-bright); }
+.markdown-rendered mark, .cm-highlight {
+  background-color: var(--text-highlight-bg);
+  color: var(--br-text-bright);
+  border-radius: 1px;
+  padding: 0.04em 0.18em;
+  box-shadow: inset 0 -1px 0 0 color-mix(in oklch, var(--br-amber) 55%, transparent);
+}
+.markdown-rendered del, .cm-strikethrough { color: var(--br-text-faint); }
+
+/* links: argon by default, sign on hover, underline drawn as a background so
+   descenders stay legible */
+.markdown-rendered a,
+.cm-s-obsidian .cm-link,
+.cm-s-obsidian .cm-hmd-internal-link {
+  color: var(--br-signal);
+  background-image: linear-gradient(to right, color-mix(in oklch, var(--br-signal) 38%, transparent), color-mix(in oklch, var(--br-signal) 38%, transparent));
+  background-size: 100% 1px;
+  background-position: 0 calc(100% - 0.06em);
+  background-repeat: no-repeat;
+  transition: color 90ms linear, background-image 90ms linear, text-shadow 90ms linear;
+}
+.markdown-rendered a:hover,
+.cm-s-obsidian .cm-link:hover,
+.cm-s-obsidian .cm-hmd-internal-link:hover {
+  color: var(--br-second);
+  background-image: linear-gradient(to right, var(--br-second), var(--br-second));
+  text-shadow: 0 0 var(--br-glow-r) color-mix(in oklch, var(--br-second) var(--br-glow-mix), transparent);
+}
+.markdown-rendered a.is-unresolved,
+.markdown-rendered .internal-link.is-unresolved {
+  color: var(--br-text-faint);
+  background-image: none;
+  border-bottom: 1px dashed color-mix(in oklch, var(--br-second) 50%, transparent);
+}
+
+/* horizontal rule: a signal fading out at both ends */
+.markdown-rendered hr,
+.cm-s-obsidian .cm-hr {
+  border: none;
+  height: 1px;
+  background-image: linear-gradient(to right,
+      transparent,
+      color-mix(in oklch, var(--br-signal) 55%, transparent) 20%,
+      color-mix(in oklch, var(--br-second) 55%, transparent) 80%,
+      transparent);
+  margin-block: calc(var(--p-spacing) * 1.8);
+}
+
+/* blockquote: lit edge, faint panel */
+.markdown-rendered blockquote,
+.HyperMD-quote {
+  border-inline-start: var(--blockquote-border-thickness) solid var(--br-signal);
+  box-shadow: inset 6px 0 var(--br-glow-r-lg) calc(var(--br-glow-r-lg) * -1)
+              color-mix(in oklch, var(--br-signal) var(--br-glow-soft), transparent);
+}
+.markdown-rendered blockquote {
+  padding: var(--size-4-2) var(--size-4-4);
+  background-color: var(--blockquote-background-color);
+}
+
+/* tags read as hardware labels */
+body {
+  --tag-size: 0.78em;
+  --tag-radius: 2px;
+  --tag-padding-x: 0.5em;
+  --tag-padding-y: 0.18em;
+  --tag-border-width: 1px;
+  --tag-color: var(--br-signal);
+  --tag-color-hover: var(--br-on-signal);
+  --tag-background: color-mix(in oklch, var(--br-signal) 9%, transparent);
+  --tag-background-hover: var(--br-signal);
+  --tag-border-color: color-mix(in oklch, var(--br-signal) 30%, transparent);
+  --tag-border-color-hover: var(--br-signal);
+  --tag-weight: 400;
+}
+.markdown-rendered a.tag, .cm-hashtag {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.02em;
+  vertical-align: 0.04em;
+}
+
+/* images and embeds */
+.markdown-rendered img:not([class]),
+.markdown-rendered .internal-embed img {
+  border: 1px solid var(--br-hairline);
+  clip-path: var(--br-clip-tr);
+}
+
+
+/* ============================================================================
+   08  CALLOUTS — system alerts
+   ----------------------------------------------------------------------------
+   Cut corner, lit edge, a title set as a machine label. The type colour is
+   the only saturated thing; the body text stays normal so a callout can hold
+   three paragraphs without becoming unreadable.
+   ========================================================================= */
+
+body {
+  --callout-padding: var(--size-4-3) var(--size-4-4);
+  --callout-radius: 0;
+  --callout-border-width: 0;
+  --callout-title-weight: 500;
+  --callout-title-size: 0.82em;
+  --callout-title-padding: 0 0 0.1em 0;
+  --callout-content-padding: 0;
+  --callout-blend-mode: normal;
+
+  --callout-default:   var(--br-signal);
+  --callout-info:      var(--br-cyan);
+  --callout-summary:   var(--br-cyan);
+  --callout-tip:       var(--br-acid);
+  --callout-success:   var(--br-acid);
+  --callout-todo:      var(--br-violet);
+  --callout-question:  var(--br-amber);
+  --callout-warning:   var(--br-amber);
+  --callout-important: var(--br-magenta);
+  --callout-example:   var(--br-violet);
+  --callout-quote:     var(--br-text-faint);
+  --callout-fail:      var(--br-red);
+  --callout-error:     var(--br-red);
+  --callout-bug:       var(--br-red);
+}
+
+.callout {
+  position: relative;
+  clip-path: var(--br-clip-tr);
+  background-color: color-mix(in oklch, var(--callout-color) var(--br-tint-weak), var(--br-page));
+  border-inline-start: 2px solid var(--callout-color);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--callout-color) 16%, transparent);
+  margin-block: calc(var(--p-spacing) * 1.1);
+}
+
+/* the lit diagonal along the cut corner */
+.callout::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: calc(100% - var(--br-cut));
+  width: calc(var(--br-cut) * 1.4142);
+  height: 1px;
+  background: var(--callout-color);
+  opacity: 0.8;
+  transform-origin: 0 0;
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+
+.callout-title {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.1em;
+  color: var(--callout-color);
+  align-items: center;
+  gap: 0.5em;
+}
+body:not(.br-hud-sentence-case) .callout-title-inner { text-transform: uppercase; }
+
+.callout-icon {
+  color: var(--callout-color);
+  filter: drop-shadow(0 0 var(--br-glow-r) color-mix(in oklch, var(--callout-color) var(--br-glow-mix), transparent));
+}
+.callout-content { color: var(--br-text); }
+.callout-content > :last-child { margin-bottom: 0; }
+
+/* a bare `> [!note]` with no title still needs its edge */
+.callout.is-collapsible .callout-title { cursor: pointer; }
+.callout-fold { color: var(--callout-color); opacity: 0.7; }
+
+
+/* ============================================================================
+   09  CODE, SYNTAX AND TABLES
+   ========================================================================= */
+
+body {
+  --code-background: var(--br-panel);
+  --code-size: 0.86em;
+  --code-radius: 0;
+  --code-border-width: 1px;
+  --code-border-color: var(--br-hairline);
+  --code-white-space: pre;
+
+  --code-normal:      var(--br-text);
+  --code-comment:     var(--br-text-faint);
+  --code-keyword:     var(--br-magenta);
+  --code-operator:    var(--br-magenta);
+  --code-function:    var(--br-amber);
+  --code-property:    var(--br-cyan);
+  --code-tag:         var(--br-cyan);
+  --code-string:      var(--br-acid);
+  --code-value:       var(--br-violet);
+  --code-important:   var(--br-amber);
+  --code-punctuation: var(--br-text-faint);
+
+  --table-border-color: var(--br-hairline);
+  --table-header-color: var(--br-text-muted);
+  --table-header-weight: 500;
+  --table-header-size: 0.76em;
+  --table-text-size: 0.92em;
+  --table-row-background-hover: color-mix(in oklch, var(--br-signal) 6%, transparent);
+  --table-selection: color-mix(in oklch, var(--br-signal) 14%, transparent);
+  --table-selection-border-color: var(--br-signal);
+  --table-line-height: 1.45;
+}
+
+/* code block reads as a terminal panel with a lit top rail */
+.markdown-rendered pre,
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-bg {
+  background-color: var(--br-panel);
+}
+.markdown-rendered pre:not(.frontmatter) {
+  position: relative;
+  clip-path: var(--br-clip-tr);
+  border: 1px solid var(--br-hairline);
+  padding: var(--size-4-4) var(--size-4-4) var(--size-4-3);
+}
+.markdown-rendered pre:not(.frontmatter)::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(to right,
+      color-mix(in oklch, var(--br-signal) 75%, transparent),
+      color-mix(in oklch, var(--br-signal) 10%, transparent) 55%,
+      transparent);
+}
+.markdown-rendered pre code { font-family: var(--font-monospace); }
+
+/* live preview code fences get the same rails without breaking the gutter */
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-begin-bg { border-top: 1px solid var(--br-hairline-hot); }
+.markdown-source-view.mod-cm6 .HyperMD-codeblock-end-bg { border-bottom: 1px solid var(--br-hairline); }
+
+/* inline code: a chip off the same panel */
+.markdown-rendered code:not(pre code),
+.cm-s-obsidian .cm-inline-code {
+  background-color: color-mix(in oklch, var(--br-signal) 8%, var(--br-panel));
+  color: var(--br-text-bright);
+  border: 1px solid color-mix(in oklch, var(--br-signal) 16%, transparent);
+  border-radius: 2px;
+  padding: 0.08em 0.34em;
+}
+
+/* tables: hairline grid, header set as a column label */
+.markdown-rendered table { border-collapse: collapse; }
+.markdown-rendered th {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.09em;
+  font-weight: 500;
+  color: var(--br-text-muted);
+  border-bottom: 1px solid var(--br-hairline-hot);
+  background: color-mix(in oklch, var(--br-signal) 4%, transparent);
+}
+body:not(.br-hud-sentence-case) .markdown-rendered th { text-transform: uppercase; }
+.markdown-rendered td { border-color: var(--br-hairline); }
+.markdown-rendered tbody tr:hover { background-color: var(--table-row-background-hover); }
+
+
+/* ============================================================================
+   10  PROPERTIES AND METADATA — the dossier header
+   ========================================================================= */
+
+body {
+  --metadata-label-font-size: 11px;
+  --metadata-label-font-weight: 400;
+  --metadata-label-text-color: var(--br-text-faint);
+  --metadata-label-text-color-hover: var(--br-signal);
+  --metadata-input-text-color: var(--br-text);
+  --metadata-input-font-size: 0.92em;
+  --metadata-property-radius: 2px;
+  --metadata-property-radius-hover: 2px;
+  --metadata-property-radius-focus: 2px;
+  --metadata-divider-color: var(--br-hairline);
+  --metadata-divider-width: 0;
+  --metadata-border-color: var(--br-hairline);
+  --metadata-border-width: 1px 0;
+  --metadata-padding: var(--size-4-3) 0;
+  --metadata-sidebar-label-text-color: var(--br-text-faint);
+}
+
+.metadata-property-key,
+.metadata-property-key-input {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.08em;
+  color: var(--br-text-faint);
+}
+body:not(.br-hud-sentence-case) .metadata-property-key-input { text-transform: uppercase; }
+.metadata-property-icon { color: var(--br-text-faint); }
+.metadata-property:hover .metadata-property-icon { color: var(--br-signal); }
+.metadata-properties-heading { display: none; }
+.metadata-container { background: transparent; }
+
+.metadata-property[data-property-key="tags"] .multi-select-pill,
+.multi-select-pill {
+  background-color: color-mix(in oklch, var(--br-signal) 10%, transparent);
+  border: 1px solid color-mix(in oklch, var(--br-signal) 26%, transparent);
+  border-radius: 2px;
+  color: var(--br-signal);
+  font-family: var(--br-font-hud);
+  font-size: 11px;
+}
+
+
+/* ============================================================================
+   11  CONTROLS — buttons, inputs, toggles, sliders
+   ========================================================================= */
+
+body {
+  --input-radius: 2px;
+  --input-height: 28px;
+  --input-border-width: 1px;
+  --interactive-normal: transparent;
+  --interactive-hover: color-mix(in oklch, var(--br-signal) 10%, transparent);
+  --toggle-radius: 2px;
+  --toggle-thumb-radius: 1px;
+  --toggle-thumb-color: var(--br-text-muted);
+  --toggle-border-width: 1px;
+  --slider-thumb-radius: 1px;
+  --slider-thumb-width: 10px;
+  --slider-thumb-height: 16px;
+  --slider-thumb-background: var(--br-signal);
+  --slider-thumb-background-hover: var(--br-second);
+  --slider-track-height: 2px;
+  --slider-track-background: var(--br-edge-2);
+  --slider-fill-background: var(--br-signal);
+  --slider-thumb-shadow: var(--br-bloom-signal);
+  --swatch-radius: 2px;
+  --checkbox-size: 15px;
+}
+
+button:not(.clickable-icon),
+.dropdown,
+input[type="text"], input[type="search"], input[type="email"],
+input[type="password"], input[type="number"], textarea {
+  border: 1px solid var(--br-hairline);
+  border-radius: 2px;
+  font-family: var(--font-interface);
+  box-shadow: none;
+}
+
+/* ...but the property drawer is prose furniture, not a form: strip the
+   chrome the rule above would otherwise put around every key and value */
+.metadata-container input,
+.metadata-container textarea,
+.metadata-container .metadata-input-longtext {
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+.metadata-container input:hover,
+.metadata-container .metadata-input-longtext:hover {
+  background-color: color-mix(in oklch, var(--br-signal) 6%, transparent);
+}
+.metadata-container input:focus,
+.metadata-container textarea:focus,
+.metadata-container .metadata-input-longtext:focus {
+  border: none;
+  background-color: color-mix(in oklch, var(--br-signal) 8%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--br-signal) 45%, transparent);
+}
+button:not(.clickable-icon) {
+  font-family: var(--br-font-hud);
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  background-color: transparent;
+  color: var(--br-text-muted);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  transition: color 90ms linear, border-color 90ms linear, background-color 90ms linear;
+}
+body:not(.br-hud-sentence-case) button:not(.clickable-icon) { text-transform: uppercase; }
+button:not(.clickable-icon):hover {
+  background-color: color-mix(in oklch, var(--br-signal) 10%, transparent);
+  border-color: var(--br-signal);
+  color: var(--br-signal);
+}
+button.mod-cta {
+  background-color: var(--br-signal);
+  border-color: var(--br-signal);
+  color: var(--br-on-signal);
+  box-shadow: var(--br-bloom-signal);
+}
+button.mod-cta:hover {
+  background-color: var(--br-second);
+  border-color: var(--br-second);
+  color: var(--br-on-signal);
+  box-shadow: var(--br-bloom-second);
+}
+button.mod-warning { background-color: var(--br-red); border-color: var(--br-red); color: var(--br-text-bright); }
+
+/* the focus ring is an accessibility guarantee, so it is drawn with a solid
+   2px halo that survives --br-glow-strength: 0 */
+input:focus-visible, textarea:focus-visible, .dropdown:focus-visible, select:focus-visible,
+input:focus, textarea:focus, .dropdown:focus, select:focus {
+  border-color: var(--br-signal);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--br-signal) 35%, transparent), var(--br-bloom-signal);
+  outline: none;
+}
+
+.checkbox-container { background-color: var(--br-edge); border: 1px solid var(--br-hairline); }
+.checkbox-container.is-enabled {
+  background-color: var(--br-signal);
+  border-color: var(--br-signal);
+  box-shadow: var(--br-bloom-signal);
+}
+.checkbox-container.is-enabled::after { background-color: var(--br-on-signal); }
+
+/* task checkboxes in prose */
+.markdown-rendered input[type="checkbox"],
+.markdown-source-view input[type="checkbox"] {
+  border: 1px solid var(--checkbox-border-color);
+  border-radius: 0;
+  transition: box-shadow 120ms linear, background-color 120ms linear;
+}
+.markdown-rendered input[type="checkbox"]:checked,
+.markdown-source-view input[type="checkbox"]:checked {
+  background-color: var(--br-signal);
+  border-color: var(--br-signal);
+  box-shadow: var(--br-bloom-signal);
+}
+
+
+/* ============================================================================
+   12  OVERLAYS — modals, prompts, menus, suggestions, tooltips
+   ----------------------------------------------------------------------------
+   Everything that floats above the workspace is a cut panel with a lit edge,
+   so a dialog reads as a terminal that opened, not as a rounded card.
+   ========================================================================= */
+
+body {
+  --modal-background: var(--br-panel);
+  --modal-border-color: var(--br-hairline-hot);
+  --modal-border-width: 1px;
+  --modal-radius: 0;
+  --modal-shadow: var(--shadow-l);
+  --prompt-background: var(--br-panel);
+  --prompt-border-color: var(--br-hairline-hot);
+  --prompt-border-width: 1px;
+  --menu-background: var(--br-panel);
+  --menu-border-color: var(--br-hairline-hot);
+  --menu-border-width: 1px;
+  --menu-radius: 0;
+  --menu-padding: 4px;
+  --suggestion-background: var(--br-panel);
+  --radius-m: 2px;
+}
+
+.modal, .prompt, .suggestion-container, .menu {
+  clip-path: var(--br-clip-tr);
+  box-shadow: var(--shadow-l);
+}
+.modal-title {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.06em;
+  color: var(--br-text-bright);
+}
+.modal-close-button:hover { color: var(--br-second); }
+
+.prompt-input {
+  font-family: var(--font-interface);
+  border-bottom: 1px solid var(--br-hairline);
+}
+.prompt-input-container::after { display: none; }
+
+.suggestion-item, .menu-item { border-radius: 1px; }
+.suggestion-item.is-selected,
+.menu-item.selected,
+.menu-item:hover:not(.is-disabled) {
+  background-color: color-mix(in oklch, var(--br-signal) 14%, transparent);
+  color: var(--br-text-bright);
+  box-shadow: inset 2px 0 0 0 var(--br-signal);
+}
+.suggestion-flair, .menu-item-icon { color: var(--br-signal); }
+.suggestion-hotkey, .menu-item .suggestion-hotkey {
+  font-family: var(--br-font-hud);
+  font-size: 10px;
+  border: 1px solid var(--br-hairline);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--br-text-faint);
+}
+.suggestion-note, .suggestion-aux { color: var(--br-text-faint); }
+
+.tooltip {
+  font-family: var(--br-font-hud);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  background-color: var(--br-void);
+  border: 1px solid var(--br-hairline-hot);
+  border-radius: 2px;
+  color: var(--br-text);
+}
+.tooltip .tooltip-arrow { display: none; }
+
+.notice {
+  background-color: var(--br-panel);
+  border: 1px solid var(--br-hairline-hot);
+  border-left: 2px solid var(--br-signal);
+  border-radius: 0;
+  clip-path: var(--br-clip-tr);
+  color: var(--br-text);
+  font-family: var(--font-interface);
+  box-shadow: var(--shadow-s);
+}
+
+/* settings pane */
+.vertical-tab-header,
+.modal.mod-settings .vertical-tab-header { background-color: var(--br-city); }
+.vertical-tab-nav-item.is-active {
+  background-color: color-mix(in oklch, var(--br-signal) 12%, transparent);
+  box-shadow: inset 2px 0 0 0 var(--br-signal);
+  color: var(--br-text-bright);
+}
+.setting-item-name { color: var(--br-text-bright); }
+.setting-item-description { color: var(--br-text-muted); }
+.setting-item-heading .setting-item-name {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.08em;
+  color: var(--br-signal);
+}
+
+
+/* ============================================================================
+   13  PLUGIN SURFACES — graph, canvas, bases
+   ========================================================================= */
+
+body {
+  --graph-line: color-mix(in oklch, var(--br-signal) 28%, transparent);
+  --graph-node: var(--br-text-muted);
+  --graph-node-focused: var(--br-second);
+  --graph-node-tag: var(--br-acid);
+  --graph-node-attachment: var(--br-violet);
+  --graph-node-unresolved: var(--br-text-ghost);
+  --graph-text: var(--br-text);
+
+  --canvas-background: var(--br-page);
+  --canvas-dot-pattern: color-mix(in oklch, var(--br-signal) 16%, transparent);
+  --canvas-color-1: var(--br-red-rgb, 255, 77, 94);
+  --canvas-card-label-color: var(--br-text-faint);
+
+  --bases-table-header-weight: 500;
+  --bases-table-header-color: var(--br-text-faint);
+  --bases-table-border-color: var(--br-hairline);
+  --bases-table-row-background-hover: color-mix(in oklch, var(--br-signal) 7%, transparent);
+  --bases-table-container-border-radius: 0;
+  --bases-embed-border-radius: 0;
+  --bases-cards-border-radius: 0;
+}
+
+.bases-table-header-title,
+.bases-tbody-group-heading {
+  font-family: var(--br-font-hud);
+  letter-spacing: 0.08em;
+  font-size: 10.5px;
+}
+body:not(.br-hud-sentence-case) .bases-table-header-title { text-transform: uppercase; }
+
+.graph-view.color-fill { color: var(--br-signal); }
+.graph-view.color-circle { color: var(--br-second); }
+.graph-view.color-line { color: color-mix(in oklch, var(--br-signal) 26%, transparent); }
+.graph-view.color-text { color: var(--br-text); }
+.graph-view.color-fill-highlight { color: var(--br-second); }
+.graph-view.color-line-highlight { color: var(--br-second); }
+.graph-view.color-fill-tag { color: var(--br-acid); }
+.graph-view.color-fill-attachment { color: var(--br-violet); }
+.graph-view.color-arrow { color: var(--br-signal); }
+
+.canvas-node-container { border-radius: 0; }
+.canvas-node.is-focused .canvas-node-container {
+  box-shadow: 0 0 0 1px var(--br-signal), var(--br-bloom-signal);
+}
+
+
+/* ============================================================================
+   14  LIVE SIGNAGE — the city is on
+   ----------------------------------------------------------------------------
+   A dark city is never still. Signs breathe at their own rate, a scan creeps
+   along the rails, and the streets below throw coloured light onto the frame.
+
+   Three rules keep it from becoming a strobe:
+     1. Nothing in the prose column moves. Motion belongs to the chrome, to
+        ornament chips and to tag halos — never to running text, and never to
+        anything whose legibility depends on its brightness. The glow is always
+        painted on a separate layer so the glyphs underneath hold still.
+     2. Nothing breathes in time with anything else. Every animated element is
+        offset, so the result reads as a skyline rather than a heartbeat.
+     3. It is dark-mode only, it honours prefers-reduced-motion, and one
+        switch stops all of it.
+   ========================================================================= */
+
+body {
+  --br-life: 58;
+  --br-city-glow: 40;
+  --br-life-dim: calc((100 - var(--br-life)) * 1%);
+  --br-halo: 0 0 calc(var(--br-glow-r-lg) * 0.8)
+             color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent);
+}
+
+@keyframes br-breathe   { 0%, 100% { opacity: var(--br-life-dim); } 50% { opacity: 1; } }
+@keyframes br-sweep     { 0% { background-position: -30% 0; } 100% { background-position: 130% 0; } }
+@keyframes br-flicker {
+  0%, 88%, 100% { opacity: 1; }
+  89%  { opacity: 0.32; }
+  90%  { opacity: 1; }
+  93%  { opacity: 0.58; }
+  94%  { opacity: 1; }
+}
+
+/* --- the halo layer -------------------------------------------------------
+   Every lit chip gets an ::after that carries the glow and nothing else, so
+   the animation touches one composited layer and never the text. */
+.theme-dark .nav-file-tag,
+.theme-dark .markdown-rendered a.tag,
+.theme-dark .multi-select-pill,
+.theme-dark .tree-item-flair { position: relative; }
+
+.theme-dark .nav-file-tag::after,
+.theme-dark .markdown-rendered a.tag::after,
+.theme-dark .multi-select-pill::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.62;
+  box-shadow:
+      0 0 calc(var(--br-glow-r-lg) * 0.62) color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent),
+      inset 0 0 5px color-mix(in oklch, var(--br-signal) calc(var(--br-glow-mix) * 0.5), transparent);
+}
+.theme-dark .markdown-rendered a.tag::after { inset: 0; }
+
+.theme-dark:not(.br-still) .nav-file-tag::after,
+.theme-dark:not(.br-still) .markdown-rendered a.tag::after,
+.theme-dark:not(.br-still) .multi-select-pill::after {
+  animation: br-breathe 7.5s ease-in-out infinite;
+  will-change: opacity;
+}
+
+/* stagger: no two signs on the same beat */
+.theme-dark .tree-item:nth-of-type(3n)   .nav-file-tag::after { animation-delay: -2.6s; animation-duration: 9s;   }
+.theme-dark .tree-item:nth-of-type(3n+1) .nav-file-tag::after { animation-delay: -5.1s; animation-duration: 6.5s; }
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n)::after   { animation-delay: -3.4s; animation-duration: 8.5s; }
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n+1)::after { animation-delay: -6.2s; animation-duration: 10s;  }
+.theme-dark .multi-select-pill:nth-of-type(2n)::after         { animation-delay: -4.3s; animation-duration: 9.5s; }
+.theme-dark .multi-select-pill:nth-of-type(3n)::after         { animation-delay: -1.9s; animation-duration: 7s;   }
+
+/* a tag under the cursor stops breathing and simply lights up */
+.theme-dark .markdown-rendered a.tag:hover::after {
+  animation: none;
+  opacity: 1;
+  box-shadow: 0 0 calc(var(--br-glow-r-lg) * 1.1) color-mix(in oklch, var(--br-signal) calc(var(--br-glow-mix) * 1.4), transparent);
+}
+
+/* --- the two edges that mark where you are -------------------------------- */
+.theme-dark:not(.br-still) .mod-root .workspace-tab-header.is-active {
+  animation: br-flicker 14s steps(1, end) infinite;
+}
+.theme-dark:not(.br-still) .tree-item-self.is-active::before {
+  animation: br-breathe 6.2s ease-in-out infinite;
+  animation-delay: -1.4s;
+}
+
+/* --- a scan creeping along the rail above the page ------------------------ */
+.theme-dark .workspace-tab-header-container::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background-image: linear-gradient(90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--br-signal) 55%, transparent) 42%,
+      color-mix(in oklch, var(--br-second) 70%, transparent) 50%,
+      color-mix(in oklch, var(--br-signal) 55%, transparent) 58%,
+      transparent 100%);
+  background-size: 34% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.85;
+}
+.theme-dark:not(.br-still) .workspace-tab-header-container::after {
+  animation: br-sweep 19s linear infinite;
+}
+.workspace-tab-header-container { position: relative; }
+
+
+/* --- alert strips: each callout's lit edge idles at its own rate ---------- */
+.theme-dark .callout::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: -2px;
+  width: 2px;
+  pointer-events: none;
+  background: var(--callout-color);
+  box-shadow: 0 0 calc(var(--br-glow-r-lg) * 0.8) color-mix(in oklch, var(--callout-color) var(--br-glow-mix), transparent);
+  opacity: 0.7;
+}
+.theme-dark:not(.br-still) .callout::before { animation: br-breathe 11s ease-in-out infinite; }
+.theme-dark .callout:nth-of-type(3n)::before   { animation-delay: -4.2s; animation-duration: 8s;    }
+.theme-dark .callout:nth-of-type(3n+1)::before { animation-delay: -7.6s; animation-duration: 13.5s; }
+
+/* --- a counter-scan under the status readout ------------------------------ */
+.theme-dark .status-bar::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+  pointer-events: none;
+  background-image: linear-gradient(90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--br-second) 60%, transparent) 50%,
+      transparent 100%);
+  background-size: 42% 100%;
+  background-repeat: no-repeat;
+  opacity: 0.7;
+}
+.theme-dark:not(.br-still) .status-bar::before {
+  animation: br-sweep 27s linear infinite reverse;
+}
+
+/* --- the title's rule catches the light as it passes ---------------------- */
+.theme-dark:not(.br-heading-rules-off) .inline-title {
+  background-size: 200% 1px;
+}
+.theme-dark:not(.br-still):not(.br-heading-rules-off) .inline-title {
+  animation: br-title-rule 22s ease-in-out infinite;
+}
+@keyframes br-title-rule {
+  0%, 100% { background-position: 0 calc(100% - 0.12em); }
+  50%      { background-position: 42% calc(100% - 0.12em); }
+}
+
+/* --- links carry a trace of neon even at rest ----------------------------- */
+.theme-dark .markdown-rendered a,
+.theme-dark .cm-s-obsidian .cm-hmd-internal-link {
+  text-shadow: 0 0 calc(var(--br-glow-r) * 0.55) color-mix(in oklch, var(--br-signal) calc(var(--br-glow-mix) * 0.5), transparent);
+}
+
+/* ============================================================================
+   ATMOSPHERE — vignette, street light, grain
+   ----------------------------------------------------------------------------
+   One fixed, non-interactive layer carries the vignette and the coloured
+   light bleeding up from the streets. It is painted once and never animated,
+   so nothing here costs a frame.
+   ========================================================================= */
+
+body:not(.br-vignette-off)::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background-image:
+      radial-gradient(52% 46% at 22% 102%,
+          color-mix(in oklch, var(--br-signal) calc(var(--br-city-glow) * 0.3%), transparent) 0%,
+          transparent 68%),
+      radial-gradient(56% 42% at 88% 104%,
+          color-mix(in oklch, var(--br-second) calc(var(--br-city-glow) * 0.26%), transparent) 0%,
+          transparent 66%),
+      radial-gradient(130% 110% at 50% 42%,
+          transparent 42%,
+          color-mix(in oklch, var(--br-void) 32%, transparent) 78%,
+          color-mix(in oklch, var(--br-void) 62%, transparent) 100%);
+}
+/* the street below is not still either; one slow transform on a layer that is
+   already composited, so the glow drifts and the vignette moves too little to
+   notice */
+.theme-dark:not(.br-still):not(.br-vignette-off)::after {
+  animation: br-drift 74s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes br-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50%      { transform: translate3d(-1.6%, -0.8%, 0) scale(1.035); }
+}
+.theme-light:not(.br-vignette-off)::after { background-image: none; }
+
+/* --- rain ----------------------------------------------------------------
+   Two layers at different depths. The streaks are drawn upright in the tile
+   and the lean comes from a constant skew on the element, so the animation is
+   a pure vertical translate of exactly one tile height and therefore loops
+   without a seam. transform only: this stays on the compositor and never
+   repaints. */
+body {
+  --br-rain-strength: 30;
+  --br-rain-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cg stroke='%23ffffff' stroke-width='0.9' stroke-linecap='round'%3E%3Cline x1='9' y1='6' x2='9' y2='40' opacity='.42'/%3E%3Cline x1='31' y1='72' x2='31' y2='112' opacity='.26'/%3E%3Cline x1='58' y1='24' x2='58' y2='52' opacity='.38'/%3E%3Cline x1='77' y1='118' x2='77' y2='156' opacity='.34'/%3E%3Cline x1='103' y1='58' x2='103' y2='88' opacity='.44'/%3E%3Cline x1='128' y1='4' x2='128' y2='30' opacity='.22'/%3E%3Cline x1='151' y1='96' x2='151' y2='138' opacity='.5'/%3E%3Cline x1='168' y1='44' x2='168' y2='70' opacity='.3'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+@keyframes br-rain-near { from { transform: skewX(-8deg) translate3d(0, -180px, 0); } to { transform: skewX(-8deg) translate3d(0, 0, 0); } }
+@keyframes br-rain-far  { from { transform: skewX(-5deg) translate3d(0, -120px, 0); } to { transform: skewX(-5deg) translate3d(0, 0, 0); } }
+
+.theme-dark.br-rain .app-container::before,
+.theme-dark.br-rain .app-container::after {
+  content: "";
+  position: fixed;
+  inset: -16% -12%;
+  z-index: 7;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-image: var(--br-rain-tile);
+  background-repeat: repeat;
+  will-change: transform;
+}
+.theme-dark.br-rain .app-container::after {
+  background-size: 180px 180px;
+  opacity: calc(var(--br-rain-strength) * 0.0075);
+  animation: br-rain-near 0.78s linear infinite;
+}
+.theme-dark.br-rain .app-container::before {
+  background-size: 120px 120px;
+  opacity: calc(var(--br-rain-strength) * 0.004);
+  animation: br-rain-far 1.55s linear infinite;
+}
+
+/* --- the searchlight ------------------------------------------------------
+   A single soft band crossing the window every fifty-two seconds. One fixed,
+   composited layer moved by transform alone. */
+@keyframes br-searchlight {
+  0%   { transform: translate3d(-42vw, 0, 0); }
+  100% { transform: translate3d(142vw, 0, 0); }
+}
+.theme-dark:not(.br-still):not(.br-searchlight-off) .horizontal-main-container::after {
+  content: "";
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 36vw;
+  z-index: 6;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-image: linear-gradient(90deg,
+      transparent 0%,
+      color-mix(in oklch, var(--br-signal) 8%, transparent) 42%,
+      color-mix(in oklch, var(--br-second) 6%, transparent) 62%,
+      transparent 100%);
+  animation: br-searchlight 52s linear infinite;
+  will-change: transform;
+}
+
+/* --- cold start -----------------------------------------------------------
+   The workspace warms up like a tube once per session. It cannot be hung off
+   opening a note: Obsidian reuses the same preview container for every file,
+   so there is no mount for CSS to catch. This fires on the one real mount
+   there is — the app container itself. */
+@keyframes br-boot {
+  0%   { opacity: 0; }
+  10%  { opacity: 0.5; }
+  16%  { opacity: 0.08; }
+  26%  { opacity: 0.92; }
+  32%  { opacity: 0.3; }
+  44%  { opacity: 1; }
+  50%  { opacity: 0.68; }
+  100% { opacity: 1; }
+}
+.theme-dark:not(.br-still) .app-container {
+  animation: br-boot 820ms ease-out 1;
+}
+
+/* --- failing signage ------------------------------------------------------
+   Three flicker patterns on four mutually prime periods, so no two faults in
+   the room ever coincide. */
+@keyframes br-brownout {
+  0%, 68%, 100% { opacity: 1; }
+  70% { opacity: 0.48; }
+  73% { opacity: 0.86; }
+  76% { opacity: 0.4; }
+  80% { opacity: 1; }
+}
+@keyframes br-fault {
+  0%, 38%, 100% { opacity: 1; }
+  39%   { opacity: 0.18; }
+  40%   { opacity: 1; }
+  41.5% { opacity: 0.3; }
+  43%   { opacity: 1; }
+}
+
+/* the vault plate browns out now and then */
+.theme-dark:not(.br-still) .workspace-drawer-vault-name {
+  animation: br-brownout 23s steps(1, end) infinite;
+}
+/* the status scan keeps sweeping while its own supply dips: two animations on
+   two different properties, so neither overwrites the other */
+.theme-dark:not(.br-still) .status-bar::before {
+  animation: br-sweep 27s linear infinite reverse,
+             br-brownout 43s steps(1, end) infinite;
+}
+/* only the alarm callouts have a fault, and only rarely */
+.theme-dark:not(.br-still) .callout[data-callout="error"] .callout-icon,
+.theme-dark:not(.br-still) .callout[data-callout="danger"] .callout-icon,
+.theme-dark:not(.br-still) .callout[data-callout="bug"] .callout-icon,
+.theme-dark:not(.br-still) .callout[data-callout="fail"] .callout-icon {
+  animation: br-fault 31s steps(1, end) infinite;
+}
+
+/* --- registration marks --------------------------------------------------
+   Two hairline brackets framing the page, kept in the left gutter where they
+   cannot collide with the header controls or the status bar. */
+.theme-dark:not(.br-marks-off) .mod-root .workspace-leaf-content::before,
+.theme-dark:not(.br-marks-off) .mod-root .workspace-leaf-content::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  left: 9px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.55;
+  border-color: var(--br-hairline-hot);
+  border-style: solid;
+}
+.theme-dark:not(.br-marks-off) .mod-root .workspace-leaf-content::before {
+  top: calc(var(--header-height) + 9px);
+  border-width: 1px 0 0 1px;
+}
+.theme-dark:not(.br-marks-off) .mod-root .workspace-leaf-content::after {
+  bottom: 9px;
+  border-width: 0 0 1px 1px;
+}
+
+/* --- the caret is the one lit thing inside the prose column --------------- */
+.theme-dark .cm-cursor,
+.theme-dark .cm-cursor-primary {
+  border-left-color: var(--br-signal);
+  border-left-width: 2px;
+  box-shadow: 0 0 var(--br-glow-r) color-mix(in oklch, var(--br-signal) var(--br-glow-mix), transparent);
+}
+
+/* --- a file row takes a charge as the pointer crosses it ------------------ */
+.tree-item-self { overflow: hidden; }
+.tree-item-self::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg,
+      transparent,
+      color-mix(in oklch, var(--br-signal) 22%, transparent) 50%,
+      transparent);
+}
+.theme-dark .tree-item-self:hover::after {
+  animation: br-charge 520ms ease-out;
+}
+@keyframes br-charge {
+  0%   { opacity: 0; transform: translateX(-60%); }
+  35%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(60%); }
+}
+
+body.br-grain::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+
+/* ============================================================================
+   15  UTILITY cssclasses
+   ----------------------------------------------------------------------------
+   Put any of these in a note's `cssclasses` frontmatter.
+   ========================================================================= */
+
+/* width */
+.br-wide  { --file-line-width: 1000px; }
+.br-full  { --file-line-width: 100%; }
+.width-1000 { --file-line-width: 1000px; }
+
+/* a whole note rendered as a terminal session */
+.br-terminal .markdown-preview-view,
+.br-terminal .markdown-source-view {
+  --font-text-theme: var(--br-font-code);
+  background-color: var(--br-void);
+}
+.br-terminal .markdown-preview-view p,
+.br-terminal .markdown-preview-view li { color: var(--br-acid); }
+.br-terminal .markdown-preview-view h1,
+.br-terminal .markdown-preview-view h2,
+.br-terminal .markdown-preview-view h3 { color: var(--br-acid); text-shadow: 0 0 8px color-mix(in oklch, var(--br-acid) 45%, transparent); }
+
+/* a dossier sheet: the note sits on a bordered panel */
+.br-dossier .markdown-preview-sizer,
+.br-dossier .cm-sizer {
+  background-color: var(--br-panel);
+  border: 1px solid var(--br-hairline);
+  clip-path: var(--br-clip-both);
+  padding-inline: var(--size-4-6);
+  padding-block: var(--size-4-5) var(--size-4-8);
+}
+
+/* hide the inline title for index and dashboard notes */
+.br-no-title .inline-title { display: none; }
+
+
+/* ============================================================================
+   16  ACCESSIBILITY, MOTION, PRINT
+   ========================================================================= */
+
+/* the whole live-signage layer collapses to a static glow */
+@media (prefers-reduced-motion: reduce) {
+  .nav-file-tag::after,
+  .markdown-rendered a.tag::after,
+  .multi-select-pill::after,
+  .mod-root .workspace-tab-header.is-active,
+  .tree-item-self.is-active::before,
+  .workspace-tab-header-container::after,
+  .side-dock-ribbon-action.is-active,
+  .callout::before,
+  .status-bar::before,
+  .workspace-drawer-vault-name,
+  .callout .callout-icon,
+  .tree-item-self:hover::after,
+  body:not(.br-vignette-off)::after,
+  .inline-title {
+    animation: none;
+    opacity: 0.8;
+  }
+  /* static rain reads as scratches on the screen, so it is removed outright */
+  .br-rain .app-container::before,
+  .br-rain .app-container::after,
+  .horizontal-main-container::after { display: none; }
+  .app-container { animation: none; opacity: 1; }
+  .inline-title { opacity: 1; }
+  .markdown-rendered a,
+  .markdown-source-view input[type="checkbox"],
+  button:not(.clickable-icon) { transition: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .modal, .prompt, .suggestion-container, .menu { backdrop-filter: none; }
+  body:not(.br-vignette-off)::after { display: none; }
+}
+
+@media (prefers-contrast: more) {
+  body {
+    --br-text: var(--br-text-bright);
+    --br-text-muted: var(--br-text);
+    --br-hairline: color-mix(in oklch, var(--br-signal) 45%, transparent);
+    --br-glow-strength: 0;
+  }
+}
+
+/* paper is not a screen: drop the city entirely */
+@media print {
+  body:not(.br-vignette-off)::after,
+  body.br-grain::before { display: none !important; }
+  .markdown-preview-view,
+  .markdown-rendered {
+    background: #fff !important;
+    color: #111 !important;
+    text-shadow: none !important;
+  }
+  .markdown-rendered h1, .markdown-rendered h2, .markdown-rendered h3,
+  .markdown-rendered h4, .markdown-rendered h5, .markdown-rendered h6 {
+    color: #000 !important;
+    background-image: none !important;
+    text-shadow: none !important;
+  }
+  .markdown-rendered a { color: #00506a !important; background-image: none !important; }
+  .callout { box-shadow: none !important; border: 1px solid #bbb !important; clip-path: none !important; }
+  .markdown-rendered pre { border: 1px solid #bbb !important; clip-path: none !important; background: #f6f6f6 !important; }
+}
