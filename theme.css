@@ -291,7 +291,7 @@ settings:
     -
         id: br-ambient-glitch-off
         title: Disable ambient signal failures
-        description: Removes frame tears, dead pixels, ghost readouts and barcode interference from the city layer.
+        description: Removes frame tears, ghost readouts and barcode interference from the city layer.
         type: class-toggle
         default: false
     -
@@ -2199,9 +2199,9 @@ body {
 
 /* --- ambient signal failures ----------------------------------------------
    These events are not attached to notes, tags or controls. They are stray
-   artefacts in the display pipeline: a damaged frame, a dead pixel cluster,
-   a barcode caught in the side camera and a ghost diagnostic projected over
-   the chrome. Every event has its own long, deliberately awkward period. */
+   artefacts in the display pipeline: a damaged frame, a barcode caught in
+   the side camera and a ghost diagnostic projected over the chrome. Every
+   event has its own long, deliberately awkward period. */
 
 @keyframes br-ambient-frame-tear {
   0%, 91%, 94%, 100% {
@@ -2260,29 +2260,6 @@ body {
     opacity: 0;
     transform: translate3d(0, 0, 0);
     clip-path: inset(0 0 100% 0);
-  }
-}
-
-@keyframes br-ambient-pixels {
-  0%, 88%, 91%, 100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scaleX(0.2);
-  }
-  88.25% {
-    opacity: 0.84;
-    transform: translate3d(-4px, 0, 0) scaleX(1.15);
-  }
-  88.55% {
-    opacity: 0.28;
-    transform: translate3d(6px, 0, 0) scaleX(0.52);
-  }
-  88.9% {
-    opacity: 0.96;
-    transform: translate3d(-1px, 0, 0) scaleX(0.8);
-  }
-  89.35% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0) scaleX(0.2);
   }
 }
 
@@ -2408,43 +2385,6 @@ body {
 .theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-tab-header-container::before {
   animation: br-ambient-rail-tear 29.1s steps(1, end) infinite;
   animation-delay: -13.4s;
-}
-
-/* Dead pixels flicker just above the status readout, like a faulty sensor. */
-.theme-dark .status-bar {
-  position: relative;
-}
-.theme-dark .status-bar::after {
-  content: "";
-  position: absolute;
-  top: -5px;
-  right: 18px;
-  width: 46px;
-  height: 4px;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0;
-  background:
-    linear-gradient(
-      90deg,
-      var(--br-signal) 0 3px,
-      transparent 3px 9px,
-      var(--br-second) 9px 11px,
-      transparent 11px 19px,
-      var(--br-amber) 19px 22px,
-      transparent 22px 30px,
-      var(--br-signal) 30px 32px,
-      transparent 32px 100%
-    );
-  box-shadow:
-    0 0 8px color-mix(in oklch, var(--br-signal) 70%, transparent),
-    0 0 14px color-mix(in oklch, var(--br-second) 45%, transparent);
-  mix-blend-mode: screen;
-  will-change: opacity, transform;
-}
-.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .status-bar::after {
-  animation: br-ambient-pixels 37.9s steps(1, end) infinite;
-  animation-delay: -21.7s;
 }
 
 /* Barcode interference: a stray advert leaking through the ribbon. */
@@ -2916,7 +2856,6 @@ body.br-grain::before {
   /* Ambient failures disappear completely for motion-sensitive users. */
   .horizontal-main-container::before,
   .workspace-tab-header-container::before,
-  .status-bar::after,
   .workspace-ribbon.mod-primary::after,
   .workspace-ribbon.mod-secondary::after,
   .workspace-tab-header-container-inner::before {
@@ -2955,7 +2894,6 @@ body.br-grain::before {
   body.br-grain::before,
   .horizontal-main-container::before,
   .workspace-tab-header-container::before,
-  .status-bar::after,
   .workspace-ribbon.mod-primary::after,
   .workspace-ribbon.mod-secondary::after,
   .workspace-tab-header-container-inner::before { display: none !important; }
