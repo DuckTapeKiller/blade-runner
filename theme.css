@@ -608,8 +608,8 @@ body {
   --br-clip-tr: polygon(0 0, calc(100% - var(--br-cut)) 0, 100% var(--br-cut), 100% 100%, 0 100%);
   --br-clip-bl: polygon(0 0, 100% 0, 100% 100%, var(--br-cut) 100%, 0 calc(100% - var(--br-cut)));
   --br-clip-both: polygon(0 0, calc(100% - var(--br-cut)) 0, 100% var(--br-cut), 100% 100%, var(--br-cut) 100%, 0 calc(100% - var(--br-cut)));
-  /* a tab: vertical sides, both top corners chamfered, open along the bottom
-     where it meets the page */
+  /* a tab: vertical sides, both top corners chamfered, with a closed bottom
+     rail where it meets the page */
   --br-cut-tab: clamp(4px, calc(var(--br-cut) * 0.72), 11px);
   --br-clip-tab: polygon(
       0 100%, 0 var(--br-cut-tab),
@@ -1118,9 +1118,9 @@ body.br-scanlines-off .workspace-tab-header-container { background-image: none; 
 
 /* The active tab is drawn as a lit outline: the header itself is painted in
    the signal colour and an inset ::after covers all of it but a one-pixel
-   frame, leaving the chamfers and the top edge glowing. drop-shadow is used
-   rather than box-shadow because it follows the clip path instead of the
-   rectangle underneath it. */
+   frame, leaving the chamfers plus the top and bottom edges glowing.
+   drop-shadow is used rather than box-shadow because it follows the clip path
+   instead of the rectangle underneath it. */
 .mod-root .workspace-tab-header.is-active {
   background-color: var(--br-signal);
   filter: drop-shadow(0 0 calc(var(--br-glow-r-lg) * 0.55)
@@ -1129,7 +1129,7 @@ body.br-scanlines-off .workspace-tab-header-container { background-image: none; 
 .mod-root .workspace-tab-header.is-active::after {
   content: "";
   position: absolute;
-  inset: 1px 1px 0 1px;
+  inset: 1px;
   /* the core tab-curve rule pins this pseudo-element to 0x0 and rounds it
      to an ellipse; inset alone cannot undo either, so size and radius are
      handed back explicitly */
