@@ -283,6 +283,18 @@ settings:
         type: class-toggle
         default: false
     -
+        id: br-glitch-off
+        title: Disable tag signal glitches
+        description: Keeps tag labels stable while retaining their neon halo.
+        type: class-toggle
+        default: false
+    -
+        id: br-ambient-glitch-off
+        title: Disable ambient signal failures
+        description: Removes frame tears, dead pixels, ghost readouts and barcode interference from the city layer.
+        type: class-toggle
+        default: false
+    -
         id: br-life
         title: Signage life
         description: How far the breathing glow swings between dim and lit.
@@ -1964,6 +1976,554 @@ body {
   box-shadow: 0 0 calc(var(--br-glow-r-lg) * 1.1) color-mix(in oklch, var(--br-signal) calc(var(--br-glow-mix) * 1.4), transparent);
 }
 
+/* --- tag signal corruption -------------------------------------------------
+   The halo already owns ::after. ::before becomes a short-lived chromatic
+   interference layer: RGB separation, horizontal scan tears and tiny
+   sub-pixel jumps. The label is only corrupted for a few frames, so tags
+   still read as interface hardware rather than turning into decoration. */
+@keyframes br-tag-glitch {
+  /* One corruption burst per cycle. The frames inside the burst are close
+     together; the next burst cannot arrive until the full 20s+ period ends. */
+  0%, 61%, 64%, 100% {
+    transform: translate3d(0, 0, 0);
+    filter: none;
+    text-shadow:
+      0 0 calc(var(--br-glow-r) * 0.55)
+      color-mix(in oklch, var(--br-signal) calc(var(--br-glow-mix) * 0.5), transparent);
+  }
+
+  /* cold RGB split */
+  62% {
+    transform: translate3d(-1px, 0, 0);
+    filter: saturate(1.45) brightness(1.08);
+    text-shadow:
+      -3px 0 0 var(--br-second),
+       3px 0 0 var(--br-signal);
+  }
+  62.35% {
+    transform: translate3d(2px, 0, 0) skewX(-4deg);
+    filter: saturate(1.8) brightness(1.18);
+    text-shadow:
+       4px 0 0 var(--br-signal),
+      -4px 0 0 var(--br-second);
+  }
+  62.7% {
+    transform: translate3d(-3px, 0, 0) skewX(3deg);
+    filter: contrast(1.5) saturate(2);
+    text-shadow:
+      -5px 0 0 var(--br-signal),
+       2px 0 0 var(--br-second);
+  }
+  63.2% {
+    transform: translate3d(1px, 0, 0);
+    filter: brightness(1.22) saturate(1.7);
+    text-shadow:
+       3px 0 0 var(--br-second),
+      -1px 0 0 var(--br-signal);
+  }
+}
+
+@keyframes br-tag-shards {
+  /* The three coloured tears below are micro-frames inside one event. */
+  0%, 61%, 64%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+
+  /* upper tear */
+  62% {
+    opacity: 0.76;
+    transform: translate3d(-7px, 0, 0);
+    clip-path: inset(10% 0 74% 0);
+  }
+  62.35% {
+    opacity: 0.9;
+    transform: translate3d(5px, 0, 0);
+    clip-path: inset(16% 0 68% 0);
+  }
+
+  /* middle tear */
+  62.7% {
+    opacity: 0.92;
+    transform: translate3d(-6px, 0, 0);
+    clip-path: inset(46% 0 31% 0);
+  }
+
+  /* low scan tear and after-image */
+  63.2% {
+    opacity: 0.62;
+    transform: translate3d(7px, 0, 0);
+    clip-path: inset(73% 0 8% 0);
+  }
+}
+
+/* Keep the interference local to the label and its halo. */
+.theme-dark .nav-file-tag,
+.theme-dark .markdown-rendered a.tag,
+.theme-dark .cm-hashtag,
+.theme-dark .multi-select-pill {
+  position: relative;
+  isolation: isolate;
+}
+
+/* The glitch is a pair of coloured scan fragments, not an opaque overlay. */
+.theme-dark .nav-file-tag::before,
+.theme-dark .markdown-rendered a.tag::before,
+.theme-dark .cm-hashtag::before,
+.theme-dark .multi-select-pill::before {
+  content: "";
+  position: absolute;
+  inset: -2px -7px;
+  z-index: 2;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 6%,
+      color-mix(in oklch, var(--br-signal) 78%, transparent) 6% 38%,
+      transparent 38% 47%,
+      color-mix(in oklch, var(--br-second) 84%, transparent) 47% 73%,
+      transparent 73% 100%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      color-mix(in oklch, var(--br-signal) 38%, transparent) 2px 3px
+    );
+  mix-blend-mode: screen;
+}
+
+/* One corruption burst per cycle, with several micro-frames inside it.
+   Every period is deliberately longer than twenty seconds, and the awkward,
+   non-matching intervals make failures drift through the city instead of
+   repeating as a chorus. */
+.theme-dark:not(.br-still):not(.br-glitch-off) .nav-file-tag,
+.theme-dark:not(.br-still):not(.br-glitch-off) .markdown-rendered a.tag,
+.theme-dark:not(.br-still):not(.br-glitch-off) .cm-hashtag,
+.theme-dark:not(.br-still):not(.br-glitch-off) .multi-select-pill {
+  animation: br-tag-glitch 31s steps(1, end) infinite;
+  will-change: transform, filter, text-shadow;
+}
+
+.theme-dark:not(.br-still):not(.br-glitch-off) .nav-file-tag::before,
+.theme-dark:not(.br-still):not(.br-glitch-off) .markdown-rendered a.tag::before,
+.theme-dark:not(.br-still):not(.br-glitch-off) .cm-hashtag::before,
+.theme-dark:not(.br-still):not(.br-glitch-off) .multi-select-pill::before {
+  animation: br-tag-shards 31s steps(1, end) infinite;
+  will-change: opacity, transform, clip-path;
+}
+
+/* The city is asynchronous: neighbouring labels use different periods and
+   phase offsets. All values stay at or above the twenty-second floor. */
+.theme-dark .tree-item:nth-of-type(3n) .nav-file-tag,
+.theme-dark .tree-item:nth-of-type(3n) .nav-file-tag::before {
+  animation-delay: -7.3s;
+  animation-duration: 23.7s;
+}
+.theme-dark .tree-item:nth-of-type(3n+1) .nav-file-tag,
+.theme-dark .tree-item:nth-of-type(3n+1) .nav-file-tag::before {
+  animation-delay: -19.1s;
+  animation-duration: 37.9s;
+}
+.theme-dark .tree-item:nth-of-type(5n) .nav-file-tag,
+.theme-dark .tree-item:nth-of-type(5n) .nav-file-tag::before {
+  animation-delay: -28.4s;
+  animation-duration: 53.3s;
+}
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n),
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n)::before {
+  animation-delay: -11.8s;
+  animation-duration: 29.1s;
+}
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n+1),
+.theme-dark .markdown-rendered a.tag:nth-of-type(3n+1)::before {
+  animation-delay: -22.6s;
+  animation-duration: 43.7s;
+}
+.theme-dark .markdown-rendered a.tag:nth-of-type(5n),
+.theme-dark .markdown-rendered a.tag:nth-of-type(5n)::before {
+  animation-delay: -35.2s;
+  animation-duration: 61.3s;
+}
+.theme-dark .cm-hashtag:nth-of-type(3n),
+.theme-dark .cm-hashtag:nth-of-type(3n)::before {
+  animation-delay: -8.6s;
+  animation-duration: 27.7s;
+}
+.theme-dark .cm-hashtag:nth-of-type(4n+1),
+.theme-dark .cm-hashtag:nth-of-type(4n+1)::before {
+  animation-delay: -17.4s;
+  animation-duration: 39.5s;
+}
+.theme-dark .cm-hashtag:nth-of-type(5n),
+.theme-dark .cm-hashtag:nth-of-type(5n)::before {
+  animation-delay: -41.8s;
+  animation-duration: 58.1s;
+}
+.theme-dark .multi-select-pill:nth-of-type(2n),
+.theme-dark .multi-select-pill:nth-of-type(2n)::before {
+  animation-delay: -4.7s;
+  animation-duration: 26.9s;
+}
+.theme-dark .multi-select-pill:nth-of-type(3n),
+.theme-dark .multi-select-pill:nth-of-type(3n)::before {
+  animation-delay: -31.1s;
+  animation-duration: 47.3s;
+}
+.theme-dark .multi-select-pill:nth-of-type(5n),
+.theme-dark .multi-select-pill:nth-of-type(5n)::before {
+  animation-delay: -50.5s;
+  animation-duration: 71.9s;
+}
+
+/* Hover gives control back to the operator: the label locks cleanly while
+   the existing neon halo remains available. */
+.theme-dark .nav-file-tag:hover,
+.theme-dark .markdown-rendered a.tag:hover,
+.theme-dark .cm-hashtag:hover,
+.theme-dark .multi-select-pill:hover {
+  animation: none;
+  transform: none;
+  filter: none;
+}
+.theme-dark .nav-file-tag:hover::before,
+.theme-dark .markdown-rendered a.tag:hover::before,
+.theme-dark .cm-hashtag:hover::before,
+.theme-dark .multi-select-pill:hover::before {
+  animation: none;
+  opacity: 0;
+}
+
+/* --- ambient signal failures ----------------------------------------------
+   These events are not attached to notes, tags or controls. They are stray
+   artefacts in the display pipeline: a damaged frame, a dead pixel cluster,
+   a barcode caught in the side camera and a ghost diagnostic projected over
+   the chrome. Every event has its own long, deliberately awkward period. */
+
+@keyframes br-ambient-frame-tear {
+  0%, 91%, 94%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    filter: none;
+    clip-path: inset(0 0 100% 0);
+  }
+  91.2% {
+    opacity: 0.42;
+    transform: translate3d(-2.4vw, 0, 0);
+    filter: saturate(1.4);
+    clip-path: inset(21% 0 77% 0);
+  }
+  91.45% {
+    opacity: 0.72;
+    transform: translate3d(1.7vw, 0, 0);
+    filter: saturate(1.9) hue-rotate(-8deg);
+    clip-path: inset(22% 0 76% 0);
+  }
+  91.8% {
+    opacity: 0.5;
+    transform: translate3d(-0.9vw, 0, 0);
+    filter: saturate(1.5) hue-rotate(10deg);
+    clip-path: inset(63% 0 34% 0);
+  }
+  92.2% {
+    opacity: 0;
+    transform: translate3d(0.4vw, 0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes br-ambient-rail-tear {
+  0%, 86%, 89%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+  86.25% {
+    opacity: 0.55;
+    transform: translate3d(-9px, 0, 0);
+    clip-path: inset(31% 0 65% 0);
+  }
+  86.6% {
+    opacity: 0.82;
+    transform: translate3d(7px, 0, 0);
+    clip-path: inset(34% 0 61% 0);
+  }
+  87.05% {
+    opacity: 0.38;
+    transform: translate3d(-3px, 0, 0);
+    clip-path: inset(67% 0 27% 0);
+  }
+  87.5% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes br-ambient-pixels {
+  0%, 88%, 91%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(0.2);
+  }
+  88.25% {
+    opacity: 0.84;
+    transform: translate3d(-4px, 0, 0) scaleX(1.15);
+  }
+  88.55% {
+    opacity: 0.28;
+    transform: translate3d(6px, 0, 0) scaleX(0.52);
+  }
+  88.9% {
+    opacity: 0.96;
+    transform: translate3d(-1px, 0, 0) scaleX(0.8);
+  }
+  89.35% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(0.2);
+  }
+}
+
+@keyframes br-ambient-barcode {
+  0%, 93%, 96%, 100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(0.1);
+    clip-path: inset(0 100% 0 0);
+  }
+  93.2% {
+    opacity: 0.72;
+    transform: translate3d(-3px, 0, 0) scaleX(1.1);
+    clip-path: inset(0 22% 0 0);
+  }
+  93.55% {
+    opacity: 0.92;
+    transform: translate3d(5px, 0, 0) scaleX(0.72);
+    clip-path: inset(0 0 0 13%);
+  }
+  94% {
+    opacity: 0.38;
+    transform: translate3d(-2px, 0, 0) scaleX(1.35);
+    clip-path: inset(0 34% 0 0);
+  }
+  94.45% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scaleX(0.1);
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+@keyframes br-ambient-readout {
+  0%, 92%, 95%, 100% {
+    opacity: 0;
+    transform: translate3d(10px, 0, 0);
+    clip-path: inset(0 100% 0 0);
+  }
+  92.25% {
+    opacity: 0.48;
+    transform: translate3d(-3px, 0, 0);
+    clip-path: inset(0 38% 0 0);
+  }
+  92.55% {
+    opacity: 0.78;
+    transform: translate3d(4px, 0, 0);
+    clip-path: inset(0 12% 0 0);
+  }
+  92.9% {
+    opacity: 0.26;
+    transform: translate3d(-1px, 0, 0);
+    clip-path: inset(0 67% 0 0);
+  }
+  93.25% {
+    opacity: 0.62;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+  93.8% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 100% 0 0);
+  }
+}
+
+/* A full-window frame tear. It sits above the interface but below the
+   vignette, and only paints a few displaced scan slices. */
+.theme-dark .horizontal-main-container::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 4%,
+      color-mix(in oklch, var(--br-signal) 78%, transparent) 4% 19%,
+      transparent 19% 38%,
+      color-mix(in oklch, var(--br-second) 72%, transparent) 38% 63%,
+      transparent 63% 74%,
+      color-mix(in oklch, var(--br-signal) 55%, transparent) 74% 96%,
+      transparent 96% 100%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      color-mix(in oklch, var(--br-signal) 32%, transparent) 2px 3px
+    );
+  mix-blend-mode: screen;
+  will-change: opacity, transform, filter, clip-path;
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .horizontal-main-container::before {
+  animation: br-ambient-frame-tear 47.3s steps(1, end) infinite;
+  animation-delay: -18.6s;
+}
+
+/* A smaller rail failure lives only in the tab header. */
+.theme-dark .workspace-tab-header-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 7%,
+      color-mix(in oklch, var(--br-second) 68%, transparent) 7% 31%,
+      transparent 31% 52%,
+      color-mix(in oklch, var(--br-signal) 76%, transparent) 52% 91%,
+      transparent 91% 100%
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      color-mix(in oklch, var(--br-second) 28%, transparent) 2px 3px
+    );
+  mix-blend-mode: screen;
+  will-change: opacity, transform, clip-path;
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-tab-header-container::before {
+  animation: br-ambient-rail-tear 29.1s steps(1, end) infinite;
+  animation-delay: -13.4s;
+}
+
+/* Dead pixels flicker just above the status readout, like a faulty sensor. */
+.theme-dark .status-bar {
+  position: relative;
+}
+.theme-dark .status-bar::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 18px;
+  width: 46px;
+  height: 4px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(
+      90deg,
+      var(--br-signal) 0 3px,
+      transparent 3px 9px,
+      var(--br-second) 9px 11px,
+      transparent 11px 19px,
+      var(--br-amber) 19px 22px,
+      transparent 22px 30px,
+      var(--br-signal) 30px 32px,
+      transparent 32px 100%
+    );
+  box-shadow:
+    0 0 8px color-mix(in oklch, var(--br-signal) 70%, transparent),
+    0 0 14px color-mix(in oklch, var(--br-second) 45%, transparent);
+  mix-blend-mode: screen;
+  will-change: opacity, transform;
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .status-bar::after {
+  animation: br-ambient-pixels 37.9s steps(1, end) infinite;
+  animation-delay: -21.7s;
+}
+
+/* Barcode interference: a stray advert leaking through the ribbon. */
+.theme-dark .workspace-ribbon.mod-primary,
+.theme-dark .workspace-ribbon.mod-secondary {
+  position: relative;
+}
+.theme-dark .workspace-ribbon.mod-primary::after,
+.theme-dark .workspace-ribbon.mod-secondary::after {
+  content: "";
+  position: fixed;
+  top: 31vh;
+  width: 42px;
+  height: 14px;
+  z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--br-signal) 76%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--br-second) 54%, transparent),
+      transparent
+    );
+  box-shadow: 0 0 12px color-mix(in oklch, var(--br-signal) 60%, transparent);
+  mix-blend-mode: screen;
+  will-change: opacity, transform, clip-path;
+}
+.theme-dark .workspace-ribbon.mod-primary::after { left: 56px; }
+.theme-dark .workspace-ribbon.mod-secondary::after { right: 14px; }
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-ribbon.mod-primary::after {
+  animation: br-ambient-barcode 67.9s steps(1, end) infinite;
+  animation-delay: -31.7s;
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-ribbon.mod-secondary::after {
+  animation: br-ambient-barcode 83.3s steps(1, end) infinite;
+  animation-delay: -52.2s;
+}
+
+/* A diagnostic ghost appears in empty chrome, not in the writing surface. */
+.theme-dark .workspace-tab-header-container-inner::before {
+  content: "// SIGNAL 07  /  FRAME DESYNC";
+  position: fixed;
+  top: 44px;
+  right: 3.5vw;
+  z-index: 8;
+  max-width: 42vw;
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  font-family: var(--br-font-hud);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.13em;
+  color: var(--br-second);
+  text-shadow:
+    -2px 0 color-mix(in oklch, var(--br-signal) 72%, transparent),
+     2px 0 color-mix(in oklch, var(--br-second) 72%, transparent);
+  opacity: 0;
+  mix-blend-mode: screen;
+  will-change: opacity, transform, clip-path;
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-tab-header-container-inner::before {
+  animation: br-ambient-readout 53.3s steps(1, end) infinite;
+  animation-delay: -24.8s;
+}
+.theme-dark .workspace-tab-header-container-inner:nth-of-type(2n)::before {
+  content: "// K-9  /  MEMORY DESYNC";
+}
+.theme-dark:not(.br-still):not(.br-ambient-glitch-off) .workspace-tab-header-container-inner:nth-of-type(2n)::before {
+  animation-duration: 71.9s;
+  animation-delay: -48.6s;
+}
+
 /* --- the two edges that mark where you are -------------------------------- */
 .theme-dark:not(.br-still) .mod-root .workspace-tab-header.is-active {
   animation: br-flicker 14s steps(1, end) infinite;
@@ -2335,6 +2895,35 @@ body.br-grain::before {
     animation: none;
     opacity: 0.8;
   }
+
+  /* tag corruption is disabled completely rather than frozen mid-tear */
+  .nav-file-tag,
+  .markdown-rendered a.tag,
+  .cm-hashtag,
+  .multi-select-pill {
+    animation: none;
+    transform: none;
+    filter: none;
+  }
+  .nav-file-tag::before,
+  .markdown-rendered a.tag::before,
+  .cm-hashtag::before,
+  .multi-select-pill::before {
+    animation: none;
+    opacity: 0;
+  }
+
+  /* Ambient failures disappear completely for motion-sensitive users. */
+  .horizontal-main-container::before,
+  .workspace-tab-header-container::before,
+  .status-bar::after,
+  .workspace-ribbon.mod-primary::after,
+  .workspace-ribbon.mod-secondary::after,
+  .workspace-tab-header-container-inner::before {
+    animation: none;
+    opacity: 0;
+  }
+
   /* static rain reads as scratches on the screen, so it is removed outright */
   .br-rain .app-container::before,
   .br-rain .app-container::after,
@@ -2363,7 +2952,13 @@ body.br-grain::before {
 /* paper is not a screen: drop the city entirely */
 @media print {
   body:not(.br-vignette-off)::after,
-  body.br-grain::before { display: none !important; }
+  body.br-grain::before,
+  .horizontal-main-container::before,
+  .workspace-tab-header-container::before,
+  .status-bar::after,
+  .workspace-ribbon.mod-primary::after,
+  .workspace-ribbon.mod-secondary::after,
+  .workspace-tab-header-container-inner::before { display: none !important; }
   .markdown-preview-view,
   .markdown-rendered {
     background: #fff !important;
